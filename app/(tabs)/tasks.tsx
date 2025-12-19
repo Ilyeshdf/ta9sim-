@@ -1,12 +1,12 @@
 import { StyleSheet, ScrollView, TouchableOpacity, View as RNView, RefreshControl } from 'react-native';
 import { Text, View } from '@/components/Themed';
-import { colors } from '@/constants/Colors';
 import { 
   Plus, Check, Clock, GraduationCap, Activity, Briefcase, Users,
-  Sparkles
+  Sparkles, Trash2, ChevronRight
 } from 'lucide-react-native';
 import { useState, useCallback } from 'react';
 import NewTaskModal from '@/components/NewTaskModal';
+import EditTaskModal from '@/components/EditTaskModal';
 import { useApp, Task } from '@/contexts/AppContext';
 import Animated, { 
   FadeInDown, 
@@ -23,6 +23,7 @@ import Animated, {
   ZoomIn,
   SlideOutRight,
 } from 'react-native-reanimated';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
@@ -30,11 +31,13 @@ const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 function AnimatedCheckbox({ 
   checked, 
   onToggle,
-  color = colors.green 
+  color,
+  theme,
 }: { 
   checked: boolean; 
   onToggle: () => void;
-  color?: string;
+  color: string;
+  theme: any;
 }) {
   const scale = useSharedValue(1);
   
@@ -55,7 +58,8 @@ function AnimatedCheckbox({
     <AnimatedTouchable
       style={[
         styles.checkbox,
-        checked && [styles.checkboxChecked, { backgroundColor: color, borderColor: color }],
+        { borderColor: theme.gray300, backgroundColor: theme.card },
+        checked && { backgroundColor: color, borderColor: color },
         animatedStyle
       ]}
       onPress={handlePress}
@@ -63,18 +67,180 @@ function AnimatedCheckbox({
     >
       {checked && (
         <Animated.View entering={ZoomIn.duration(200)}>
-          <Check color={colors.white} size={14} strokeWidth={3} />
+          <Check color={theme.white} size={14} strokeWidth={3} />
         </Animated.View>
       )}
     </AnimatedTouchable>
   );
 }
 
+// Swipeable Task Card
+function SwipeableTaskCard({ 
+  task, 
+  index,
+  theme,
+  onToggle,
+  onDelete,
+  onEdit,
+}: { 
+  task: Task;
+  index: number;
+  theme: any;
+  onToggle: () => void;
+  onDelete: () => void;
+  onEdit: () => void;
+}) {
+  const translateX = useSharedValue(0);
+  const deleteOpacity = useSharedValue(0);
+
+  const getCategoryStyle = (category: Task['category']) => {
+    switch (category) {
+      case 'Academics': return { icon: GraduationCap, color: theme.blue, bg: theme.blueMuted };
+      case 'Wellness': return { icon: Activity, color: theme.green, bg: theme.greenMuted };
+      case 'Work': return { icon: Briefcase, color: theme.purple, bg: theme.purpleMuted };
+      case 'Social': return { icon: Users, color: theme.orange, bg: theme.orangeMuted };
+      default: return { icon: GraduationCap, color: theme.blue, bg: theme.blueMuted };
+    }
+  };
+
+  const getPriorityStyle = (priority: Task['priority']) => {
+    switch (priority) {
+      case 'High': return { color: theme.error, label: 'High Priority' };
+      case 'Medium': return { color: theme.orange, label: 'Medium' };
+      case 'Low': return { color: theme.green, label: 'Low' };
+      default: return { color: theme.gray400, label: '' };
+    }
+  };
+
+  const categoryStyle = getCategoryStyle(task.category);
+  const priorityStyle = getPriorityStyle(task.priority);
+  const IconComponent = categoryStyle.icon;
+
+  const panGesture = Gesture.Pan()
+    .onUpdate((event) => {
+      if (event.translationX < 0) {
+        translateX.value = Math.max(event.translationX, -100);
+        deleteOpacity.value = Math.min(Math.abs(event.translationX) / 100, 1);
+      }
+    })
+    .onEnd((event) => {
+      if (event.translationX < -80) {
+        translateX.value = withTiming(-100);
+        deleteOpacity.value = withTiming(1);
+      } else {
+        translateX.value = withSpring(0);
+        deleteOpacity.value = withTiming(0);
+      }
+    });
+
+  const cardStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: translateX.value }],
+  }));
+
+  const deleteStyle = useAnimatedStyle(() => ({
+    opacity: deleteOpacity.value,
+  }));
+
+  const handleDeletePress = () => {
+    translateX.value = withTiming(-400, { duration: 300 });
+    setTimeout(onDelete, 300);
+  };
+
+  return (
+    <Animated.View
+      entering={FadeInRight.delay(400 + index * 80).duration(400).springify()}
+      exiting={SlideOutRight.duration(300)}
+      layout={Layout.springify()}
+      style={styles.swipeContainer}
+    >
+      {/* Delete Action Background */}
+      <Animated.View style={[styles.deleteAction, deleteStyle]}>
+        <TouchableOpacity style={styles.deleteButton} onPress={handleDeletePress}>
+          <Trash2 color="#FFF" size={22} />
+        </TouchableOpacity>
+      </Animated.View>
+
+      {/* Task Card */}
+      <GestureDetector gesture={panGesture}>
+        <Animated.View
+          style={[
+            styles.taskCard,
+            { backgroundColor: theme.card },
+            task.completed && { opacity: 0.7, backgroundColor: theme.cardAlt },
+            cardStyle
+          ]}
+        >
+          <View style={[styles.taskLeft, { backgroundColor: 'transparent' }]}>
+            <AnimatedCheckbox 
+              checked={task.completed}
+              onToggle={onToggle}
+              color={theme.green}
+              theme={theme}
+            />
+          </View>
+          
+          <TouchableOpacity 
+            style={[styles.taskBody, { backgroundColor: 'transparent' }]}
+            onPress={onEdit}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.taskHeader, { backgroundColor: 'transparent' }]}>
+              <View style={[styles.categoryBadge, { backgroundColor: categoryStyle.bg }]}>
+                <IconComponent color={categoryStyle.color} size={12} />
+                <Text style={[styles.categoryText, { color: categoryStyle.color }]}>
+                  {task.category}
+                </Text>
+              </View>
+              {!task.completed && (
+                <View style={[styles.priorityBadge, { backgroundColor: priorityStyle.color + '15' }]}>
+                  <Text style={[styles.priorityText, { color: priorityStyle.color }]}>
+                    {task.priority}
+                  </Text>
+                </View>
+              )}
+            </View>
+            
+            <Text style={[
+              styles.taskTitle, 
+              { color: theme.textPrimary },
+              task.completed && { textDecorationLine: 'line-through', color: theme.textTertiary }
+            ]}>
+              {task.title}
+            </Text>
+            
+            <View style={[styles.taskMeta, { backgroundColor: 'transparent' }]}>
+              {task.time && (
+                <View style={[styles.taskMetaItem, { backgroundColor: 'transparent' }]}>
+                  <Clock color={theme.textTertiary} size={12} />
+                  <Text style={[styles.taskMetaText, { color: theme.textTertiary }]}>{task.time}</Text>
+                </View>
+              )}
+              {task.dueDate && (
+                <Text style={[
+                  styles.taskDue, 
+                  { color: theme.error },
+                  task.completed && { color: theme.textTertiary }
+                ]}>
+                  Due {task.dueDate}
+                </Text>
+              )}
+            </View>
+          </TouchableOpacity>
+
+          <ChevronRight color={theme.gray300} size={18} />
+        </Animated.View>
+      </GestureDetector>
+    </Animated.View>
+  );
+}
+
 export default function TasksScreen() {
   const [modalVisible, setModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [activeFilter, setActiveFilter] = useState<'all' | 'pending' | 'completed'>('all');
   const [refreshing, setRefreshing] = useState(false);
-  const { tasks, toggleTaskCompletion, metrics } = useApp();
+  const { tasks, toggleTaskCompletion, deleteTask, metrics, theme, loadTasks } = useApp();
   
   const filteredTasks = tasks.filter(task => {
     if (activeFilter === 'pending') return !task.completed;
@@ -85,29 +251,15 @@ export default function TasksScreen() {
   const pendingCount = tasks.filter(t => !t.completed).length;
   const completedCount = tasks.filter(t => t.completed).length;
 
-  const getCategoryStyle = (category: Task['category']) => {
-    switch (category) {
-      case 'Academics': return { icon: GraduationCap, color: colors.blue, bg: colors.blueMuted };
-      case 'Wellness': return { icon: Activity, color: colors.green, bg: colors.greenMuted };
-      case 'Work': return { icon: Briefcase, color: colors.purple, bg: colors.purpleMuted };
-      case 'Social': return { icon: Users, color: colors.orange, bg: colors.orangeMuted };
-      default: return { icon: GraduationCap, color: colors.blue, bg: colors.blueMuted };
-    }
-  };
-
-  const getPriorityStyle = (priority: Task['priority']) => {
-    switch (priority) {
-      case 'High': return { color: colors.error, label: 'High Priority' };
-      case 'Medium': return { color: colors.orange, label: 'Medium' };
-      case 'Low': return { color: colors.green, label: 'Low' };
-      default: return { color: colors.gray400, label: '' };
-    }
-  };
-
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 1500);
-  }, []);
+    loadTasks().finally(() => setRefreshing(false));
+  }, [loadTasks]);
+
+  const handleEditTask = (task: Task) => {
+    setSelectedTask(task);
+    setEditModalVisible(true);
+  };
 
   // FAB Animation
   const fabScale = useSharedValue(1);
@@ -124,182 +276,153 @@ export default function TasksScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <ScrollView 
-        style={styles.scrollView} 
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={colors.primary}
-          />
-        }
-      >
-        {/* Header */}
-        <Animated.View 
-          style={styles.header}
-          entering={FadeInDown.duration(500).springify()}
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <View style={[styles.container, { backgroundColor: theme.background }]}>
+        <ScrollView 
+          style={styles.scrollView} 
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={theme.primary}
+            />
+          }
         >
-          <Text style={styles.headerTitle}>My Tasks</Text>
-          <Text style={styles.headerSubtitle}>
-            {pendingCount} pending • {completedCount} completed
-          </Text>
-        </Animated.View>
-
-        {/* Stats Cards */}
-        <View style={styles.statsRow}>
+          {/* Header */}
           <Animated.View 
-            style={styles.statCard}
-            entering={FadeInDown.delay(100).duration(400).springify()}
+            style={styles.header}
+            entering={FadeInDown.duration(500).springify()}
           >
-            <View style={[styles.statIcon, { backgroundColor: colors.primaryMuted }]}>
-              <Sparkles color={colors.primary} size={20} />
-            </View>
-            <View style={styles.statContent}>
-              <Text style={styles.statValue}>{metrics.energy}%</Text>
-              <Text style={styles.statLabel}>Energy</Text>
-            </View>
+            <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>My Tasks</Text>
+            <Text style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
+              {pendingCount} pending • {completedCount} completed
+            </Text>
           </Animated.View>
-          <Animated.View 
-            style={styles.statCard}
-            entering={FadeInDown.delay(200).duration(400).springify()}
-          >
-            <View style={[styles.statIcon, { backgroundColor: colors.greenMuted }]}>
-              <Check color={colors.green} size={20} />
-            </View>
-            <View style={styles.statContent}>
-              <Text style={styles.statValue}>{completedCount}</Text>
-              <Text style={styles.statLabel}>Done Today</Text>
-            </View>
-          </Animated.View>
-        </View>
 
-        {/* Filter Tabs - Animated */}
-        <Animated.View 
-          style={styles.filterContainer}
-          entering={FadeInDown.delay(300).duration(400)}
-        >
-          {(['all', 'pending', 'completed'] as const).map((filter, index) => (
-            <AnimatedTouchable 
-              key={filter}
-              style={[styles.filterTab, activeFilter === filter && styles.filterTabActive]}
-              onPress={() => setActiveFilter(filter)}
-              entering={FadeInRight.delay(300 + index * 50).duration(300)}
-            >
-              <Text style={[styles.filterText, activeFilter === filter && styles.filterTextActive]}>
-                {filter === 'all' ? `All (${tasks.length})` : 
-                 filter === 'pending' ? `Pending (${pendingCount})` : 
-                 `Done (${completedCount})`}
-              </Text>
-            </AnimatedTouchable>
-          ))}
-        </Animated.View>
-
-        {/* Task List with Layout Animation */}
-        <Animated.View style={styles.taskList} layout={Layout.springify()}>
-          {filteredTasks.length === 0 ? (
+          {/* Stats Cards */}
+          <View style={[styles.statsRow, { backgroundColor: 'transparent' }]}>
             <Animated.View 
-              style={styles.emptyState}
-              entering={FadeInUp.delay(400).duration(400)}
+              style={[styles.statCard, { backgroundColor: theme.card }]}
+              entering={FadeInDown.delay(100).duration(400).springify()}
             >
-              <View style={styles.emptyIcon}>
-                <Check color={colors.primary} size={32} />
+              <View style={[styles.statIcon, { backgroundColor: theme.primaryMuted }]}>
+                <Sparkles color={theme.primary} size={20} />
               </View>
-              <Text style={styles.emptyTitle}>
-                {activeFilter === 'completed' ? 'No completed tasks yet' : 
-                 activeFilter === 'pending' ? 'All caught up!' : 'No tasks yet'}
-              </Text>
-              <Text style={styles.emptySubtitle}>
-                {activeFilter === 'pending' ? 'Great job! You have no pending tasks' : 
-                 'Tap + to create your first task'}
-              </Text>
+              <View style={[styles.statContent, { backgroundColor: 'transparent' }]}>
+                <Text style={[styles.statValue, { color: theme.textPrimary }]}>{metrics.energy}%</Text>
+                <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Energy</Text>
+              </View>
             </Animated.View>
-          ) : (
-            filteredTasks.map((task, index) => {
-              const categoryStyle = getCategoryStyle(task.category);
-              const priorityStyle = getPriorityStyle(task.priority);
-              const IconComponent = categoryStyle.icon;
-              
-              return (
-                <Animated.View
+            <Animated.View 
+              style={[styles.statCard, { backgroundColor: theme.card }]}
+              entering={FadeInDown.delay(200).duration(400).springify()}
+            >
+              <View style={[styles.statIcon, { backgroundColor: theme.greenMuted }]}>
+                <Check color={theme.green} size={20} />
+              </View>
+              <View style={[styles.statContent, { backgroundColor: 'transparent' }]}>
+                <Text style={[styles.statValue, { color: theme.textPrimary }]}>{completedCount}</Text>
+                <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Done Today</Text>
+              </View>
+            </Animated.View>
+          </View>
+
+          {/* Filter Tabs */}
+          <Animated.View 
+            style={styles.filterContainer}
+            entering={FadeInDown.delay(300).duration(400)}
+          >
+            {(['all', 'pending', 'completed'] as const).map((filter, index) => (
+              <AnimatedTouchable 
+                key={filter}
+                style={[
+                  styles.filterTab, 
+                  { backgroundColor: theme.card },
+                  activeFilter === filter && { backgroundColor: theme.primary }
+                ]}
+                onPress={() => setActiveFilter(filter)}
+                entering={FadeInRight.delay(300 + index * 50).duration(300)}
+              >
+                <Text style={[
+                  styles.filterText, 
+                  { color: theme.textSecondary },
+                  activeFilter === filter && { color: '#FFF' }
+                ]}>
+                  {filter === 'all' ? `All (${tasks.length})` : 
+                   filter === 'pending' ? `Pending (${pendingCount})` : 
+                   `Done (${completedCount})`}
+                </Text>
+              </AnimatedTouchable>
+            ))}
+          </Animated.View>
+
+          {/* Task List */}
+          <Animated.View style={styles.taskList} layout={Layout.springify()}>
+            {filteredTasks.length === 0 ? (
+              <Animated.View 
+                style={styles.emptyState}
+                entering={FadeInUp.delay(400).duration(400)}
+              >
+                <View style={[styles.emptyIcon, { backgroundColor: theme.primaryMuted }]}>
+                  <Check color={theme.primary} size={32} />
+                </View>
+                <Text style={[styles.emptyTitle, { color: theme.textPrimary }]}>
+                  {activeFilter === 'completed' ? 'No completed tasks yet' : 
+                   activeFilter === 'pending' ? 'All caught up!' : 'No tasks yet'}
+                </Text>
+                <Text style={[styles.emptySubtitle, { color: theme.textTertiary }]}>
+                  {activeFilter === 'pending' ? 'Great job! You have no pending tasks' : 
+                   'Tap + to create your first task'}
+                </Text>
+              </Animated.View>
+            ) : (
+              filteredTasks.map((task, index) => (
+                <SwipeableTaskCard
                   key={task.id}
-                  style={[styles.taskCard, task.completed && styles.taskCardCompleted]}
-                  entering={FadeInRight.delay(400 + index * 80).duration(400).springify()}
-                  exiting={SlideOutRight.duration(300)}
-                  layout={Layout.springify()}
-                >
-                  <View style={styles.taskLeft}>
-                    <AnimatedCheckbox 
-                      checked={task.completed}
-                      onToggle={() => toggleTaskCompletion(task.id)}
-                      color={colors.green}
-                    />
-                  </View>
-                  
-                  <View style={styles.taskBody}>
-                    <View style={styles.taskHeader}>
-                      <View style={[styles.categoryBadge, { backgroundColor: categoryStyle.bg }]}>
-                        <IconComponent color={categoryStyle.color} size={12} />
-                        <Text style={[styles.categoryText, { color: categoryStyle.color }]}>
-                          {task.category}
-                        </Text>
-                      </View>
-                      {!task.completed && (
-                        <View style={[styles.priorityBadge, { backgroundColor: priorityStyle.color + '15' }]}>
-                          <Text style={[styles.priorityText, { color: priorityStyle.color }]}>
-                            {task.priority}
-                          </Text>
-                        </View>
-                      )}
-                    </View>
-                    
-                    <Text style={[styles.taskTitle, task.completed && styles.taskTitleCompleted]}>
-                      {task.title}
-                    </Text>
-                    
-                    <View style={styles.taskMeta}>
-                      {task.time && (
-                        <View style={styles.taskMetaItem}>
-                          <Clock color={colors.textTertiary} size={12} />
-                          <Text style={styles.taskMetaText}>{task.time}</Text>
-                        </View>
-                      )}
-                      {task.dueDate && (
-                        <Text style={[styles.taskDue, task.completed && styles.taskMetaCompleted]}>
-                          Due {task.dueDate}
-                        </Text>
-                      )}
-                    </View>
-                  </View>
-                </Animated.View>
-              );
-            })
-          )}
-        </Animated.View>
+                  task={task}
+                  index={index}
+                  theme={theme}
+                  onToggle={() => toggleTaskCompletion(task.id)}
+                  onDelete={() => deleteTask(task.id)}
+                  onEdit={() => handleEditTask(task)}
+                />
+              ))
+            )}
+          </Animated.View>
 
-        <View style={{ height: 140 }} />
-      </ScrollView>
+          <View style={{ height: 140 }} />
+        </ScrollView>
 
-      {/* Animated Floating Action Button */}
-      <AnimatedTouchable 
-        style={[styles.fab, fabAnimatedStyle]} 
-        onPress={handleFabPress}
-        entering={FadeInUp.delay(600).duration(400).springify()}
-      >
-        <Plus color={colors.white} size={26} />
-      </AnimatedTouchable>
+        {/* Floating Action Button */}
+        <AnimatedTouchable 
+          style={[styles.fab, { backgroundColor: theme.primary }, fabAnimatedStyle]} 
+          onPress={handleFabPress}
+          entering={FadeInUp.delay(600).duration(400).springify()}
+        >
+          <Plus color="#FFF" size={26} />
+        </AnimatedTouchable>
 
-      {/* New Task Modal */}
-      <NewTaskModal visible={modalVisible} onClose={() => setModalVisible(false)} />
-    </View>
+        {/* New Task Modal */}
+        <NewTaskModal visible={modalVisible} onClose={() => setModalVisible(false)} />
+        
+        {/* Edit Task Modal */}
+        <EditTaskModal 
+          visible={editModalVisible} 
+          onClose={() => {
+            setEditModalVisible(false);
+            setSelectedTask(null);
+          }} 
+          task={selectedTask}
+        />
+      </View>
+    </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   scrollView: {
     flex: 1,
@@ -313,11 +436,9 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 28,
     fontWeight: '700',
-    color: colors.textPrimary,
   },
   headerSubtitle: {
     fontSize: 14,
-    color: colors.textSecondary,
     marginTop: 4,
   },
   statsRow: {
@@ -330,10 +451,9 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.white,
     padding: 16,
     borderRadius: 16,
-    shadowColor: colors.black,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
@@ -349,16 +469,13 @@ const styles = StyleSheet.create({
   },
   statContent: {
     flex: 1,
-    backgroundColor: 'transparent',
   },
   statValue: {
     fontSize: 20,
     fontWeight: '700',
-    color: colors.textPrimary,
   },
   statLabel: {
     fontSize: 12,
-    color: colors.textSecondary,
     marginTop: 2,
   },
   filterContainer: {
@@ -371,18 +488,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 20,
-    backgroundColor: colors.white,
-  },
-  filterTabActive: {
-    backgroundColor: colors.primary,
   },
   filterText: {
     fontSize: 13,
     fontWeight: '600',
-    color: colors.textSecondary,
-  },
-  filterTextActive: {
-    color: colors.white,
   },
   taskList: {
     paddingHorizontal: 24,
@@ -396,7 +505,6 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: colors.primaryMuted,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
@@ -404,59 +512,62 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: colors.textPrimary,
     marginBottom: 6,
   },
   emptySubtitle: {
     fontSize: 14,
-    color: colors.textTertiary,
     textAlign: 'center',
+  },
+  swipeContainer: {
+    marginBottom: 12,
+    position: 'relative',
+  },
+  deleteAction: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    width: 100,
+    backgroundColor: '#FF5555',
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    paddingRight: 20,
+  },
+  deleteButton: {
+    padding: 10,
   },
   taskCard: {
     flexDirection: 'row',
-    backgroundColor: colors.white,
+    alignItems: 'center',
     borderRadius: 16,
     padding: 16,
-    marginBottom: 12,
-    shadowColor: colors.black,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
     elevation: 2,
   },
-  taskCardCompleted: {
-    opacity: 0.7,
-    backgroundColor: colors.cardAlt,
-  },
   taskLeft: {
     marginRight: 14,
     paddingTop: 2,
-    backgroundColor: 'transparent',
   },
   checkbox: {
     width: 26,
     height: 26,
     borderRadius: 13,
     borderWidth: 2,
-    borderColor: colors.gray300,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.white,
-  },
-  checkboxChecked: {
-    backgroundColor: colors.green,
-    borderColor: colors.green,
   },
   taskBody: {
     flex: 1,
-    backgroundColor: 'transparent',
   },
   taskHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     marginBottom: 6,
-    backgroundColor: 'transparent',
   },
   categoryBadge: {
     flexDirection: 'row',
@@ -482,37 +593,25 @@ const styles = StyleSheet.create({
   taskTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.textPrimary,
     lineHeight: 22,
-  },
-  taskTitleCompleted: {
-    textDecorationLine: 'line-through',
-    color: colors.textTertiary,
   },
   taskMeta: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     marginTop: 8,
-    backgroundColor: 'transparent',
   },
   taskMetaItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: 'transparent',
   },
   taskMetaText: {
     fontSize: 12,
-    color: colors.textTertiary,
   },
   taskDue: {
     fontSize: 12,
-    color: colors.error,
     fontWeight: '500',
-  },
-  taskMetaCompleted: {
-    color: colors.textTertiary,
   },
   fab: {
     position: 'absolute',
@@ -521,10 +620,9 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.primary,
+    shadowColor: '#5B4BDB',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.35,
     shadowRadius: 12,

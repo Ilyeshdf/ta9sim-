@@ -11,12 +11,11 @@ import {
     Platform,
 } from 'react-native';
 import { Text } from './Themed';
-import { colors } from '@/constants/Colors';
 import { MessageCircle, X, Send, Sparkles, Bot } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
 
 export default function AIAgent() {
-    const { aiMessages, addAIMessage, agentVisible, setAgentVisible } = useApp();
+    const { aiMessages, addAIMessage, agentVisible, setAgentVisible, theme } = useApp();
     const [inputText, setInputText] = useState('');
     const [isTyping, setIsTyping] = useState(false);
     const scrollViewRef = useRef<ScrollView>(null);
@@ -86,12 +85,12 @@ export default function AIAgent() {
     if (!agentVisible) {
         return (
             <TouchableOpacity
-                style={styles.fab}
+                style={[styles.fab, { backgroundColor: theme.primary, shadowColor: theme.primary }]}
                 onPress={() => setAgentVisible(true)}
                 activeOpacity={0.9}
             >
                 <View style={styles.fabInner}>
-                    <Sparkles color={colors.white} size={22} />
+                    <Sparkles color={theme.white} size={22} />
                 </View>
             </TouchableOpacity>
         );
@@ -101,56 +100,57 @@ export default function AIAgent() {
         <Animated.View
             style={[
                 styles.container,
+                { backgroundColor: theme.background },
                 {
                     transform: [{ translateY: slideAnim }],
                 },
             ]}
         >
             {/* Header */}
-            <View style={styles.header}>
+            <View style={[styles.header, { backgroundColor: theme.card, borderBottomColor: theme.gray100 }]}>
                 <View style={styles.headerLeft}>
-                    <View style={styles.avatar}>
-                        <Sparkles color={colors.primary} size={18} />
+                    <View style={[styles.avatar, { backgroundColor: theme.primaryMuted }]}>
+                        <Sparkles color={theme.primary} size={18} />
                     </View>
                     <View style={styles.headerInfo}>
-                        <Text style={styles.agentName}>AI Coach</Text>
+                        <Text style={[styles.agentName, { color: theme.textPrimary }]}>AI Coach</Text>
                         <View style={styles.statusRow}>
-                            <View style={styles.statusDot} />
-                            <Text style={styles.statusText}>Online</Text>
+                            <View style={[styles.statusDot, { backgroundColor: theme.green }]} />
+                            <Text style={[styles.statusText, { color: theme.green }]}>Online</Text>
                         </View>
                     </View>
                 </View>
-                <TouchableOpacity style={styles.closeBtn} onPress={() => setAgentVisible(false)}>
-                    <X color={colors.textSecondary} size={20} />
+                <TouchableOpacity style={[styles.closeBtn, { backgroundColor: theme.gray100 }]} onPress={() => setAgentVisible(false)}>
+                    <X color={theme.textSecondary} size={20} />
                 </TouchableOpacity>
             </View>
 
             {/* Messages */}
             <ScrollView
                 ref={scrollViewRef}
-                style={styles.messagesContainer}
+                style={[styles.messagesContainer, { backgroundColor: theme.background }]}
                 contentContainerStyle={styles.messagesContent}
                 showsVerticalScrollIndicator={false}
             >
                 {aiMessages.length === 0 && (
                     <View style={styles.welcomeState}>
-                        <View style={styles.welcomeIcon}>
-                            <Bot color={colors.primary} size={32} />
+                        <View style={[styles.welcomeIcon, { backgroundColor: theme.primaryMuted }]}>
+                            <Bot color={theme.primary} size={32} />
                         </View>
-                        <Text style={styles.welcomeTitle}>Hey there!</Text>
-                        <Text style={styles.welcomeText}>
+                        <Text style={[styles.welcomeTitle, { color: theme.textPrimary }]}>Hey there!</Text>
+                        <Text style={[styles.welcomeText, { color: theme.textSecondary }]}>
                             I'm your personal productivity coach. I can help you plan your day, manage stress, and stay balanced.
                         </Text>
                         <View style={styles.suggestions}>
                             {['Plan my day', 'I feel stressed', 'Help me balance'].map((suggestion) => (
                                 <TouchableOpacity
                                     key={suggestion}
-                                    style={styles.suggestionPill}
+                                    style={[styles.suggestionPill, { backgroundColor: theme.card, borderColor: theme.gray200 }]}
                                     onPress={() => {
                                         setInputText(suggestion);
                                     }}
                                 >
-                                    <Text style={styles.suggestionText}>{suggestion}</Text>
+                                    <Text style={[styles.suggestionText, { color: theme.primary }]}>{suggestion}</Text>
                                 </TouchableOpacity>
                             ))}
                         </View>
@@ -166,19 +166,22 @@ export default function AIAgent() {
                         ]}
                     >
                         {message.role === 'agent' && (
-                            <View style={styles.messageMiniAvatar}>
-                                <Sparkles color={colors.primary} size={10} />
+                            <View style={[styles.messageMiniAvatar, { backgroundColor: theme.primaryMuted }]}>
+                                <Sparkles color={theme.primary} size={10} />
                             </View>
                         )}
                         <View
                             style={[
                                 styles.messageBubble,
-                                message.role === 'user' ? styles.userBubble : styles.agentBubble,
+                                message.role === 'user' 
+                                    ? [styles.userBubble, { backgroundColor: theme.primary }] 
+                                    : [styles.agentBubble, { backgroundColor: theme.card }],
                             ]}
                         >
                             <Text
                                 style={[
                                     styles.messageText,
+                                    { color: theme.textPrimary },
                                     message.role === 'user' && styles.userMessageText,
                                 ]}
                             >
@@ -190,14 +193,14 @@ export default function AIAgent() {
 
                 {isTyping && (
                     <View style={[styles.messageRow, styles.agentRow]}>
-                        <View style={styles.messageMiniAvatar}>
-                            <Sparkles color={colors.primary} size={10} />
+                        <View style={[styles.messageMiniAvatar, { backgroundColor: theme.primaryMuted }]}>
+                            <Sparkles color={theme.primary} size={10} />
                         </View>
-                        <View style={[styles.messageBubble, styles.agentBubble]}>
+                        <View style={[styles.messageBubble, styles.agentBubble, { backgroundColor: theme.card }]}>
                             <View style={styles.typingIndicator}>
-                                <View style={styles.typingDot} />
-                                <View style={styles.typingDot} />
-                                <View style={styles.typingDot} />
+                                <View style={[styles.typingDot, { backgroundColor: theme.gray300 }]} />
+                                <View style={[styles.typingDot, { backgroundColor: theme.gray300 }]} />
+                                <View style={[styles.typingDot, { backgroundColor: theme.gray300 }]} />
                             </View>
                         </View>
                     </View>
@@ -209,11 +212,11 @@ export default function AIAgent() {
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 keyboardVerticalOffset={20}
             >
-                <View style={styles.inputContainer}>
+                <View style={[styles.inputContainer, { backgroundColor: theme.card, borderTopColor: theme.gray100 }]}>
                     <TextInput
-                        style={styles.input}
+                        style={[styles.input, { backgroundColor: theme.backgroundTertiary, color: theme.textPrimary }]}
                         placeholder="Ask me anything..."
-                        placeholderTextColor={colors.textTertiary}
+                        placeholderTextColor={theme.textTertiary}
                         value={inputText}
                         onChangeText={setInputText}
                         onSubmitEditing={handleSend}
@@ -221,12 +224,15 @@ export default function AIAgent() {
                         maxLength={500}
                     />
                     <TouchableOpacity
-                        style={[styles.sendBtn, !inputText.trim() && styles.sendBtnDisabled]}
+                        style={[
+                            styles.sendBtn, 
+                            { backgroundColor: inputText.trim() ? theme.primary : theme.gray200 }
+                        ]}
                         onPress={handleSend}
                         disabled={!inputText.trim()}
                     >
                         <Send
-                            color={inputText.trim() ? colors.white : colors.textTertiary}
+                            color={inputText.trim() ? theme.white : theme.textTertiary}
                             size={18}
                         />
                     </TouchableOpacity>
@@ -242,19 +248,19 @@ const styles = StyleSheet.create({
         right: 24,
         bottom: 120,
         zIndex: 999,
-    },
-    fabInner: {
         width: 56,
         height: 56,
         borderRadius: 28,
-        backgroundColor: colors.primary,
         alignItems: 'center',
         justifyContent: 'center',
-        shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 6 },
         shadowOpacity: 0.4,
         shadowRadius: 12,
         elevation: 8,
+    },
+    fabInner: {
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     container: {
         position: 'absolute',
@@ -262,10 +268,9 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         height: '75%',
-        backgroundColor: colors.background,
         borderTopLeftRadius: 28,
         borderTopRightRadius: 28,
-        shadowColor: colors.black,
+        shadowColor: '#000',
         shadowOffset: { width: 0, height: -8 },
         shadowOpacity: 0.12,
         shadowRadius: 24,
@@ -279,11 +284,9 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingTop: 20,
         paddingBottom: 16,
-        backgroundColor: colors.white,
         borderTopLeftRadius: 28,
         borderTopRightRadius: 28,
         borderBottomWidth: 1,
-        borderBottomColor: colors.gray100,
     },
     headerLeft: {
         flexDirection: 'row',
@@ -294,7 +297,6 @@ const styles = StyleSheet.create({
         width: 44,
         height: 44,
         borderRadius: 22,
-        backgroundColor: colors.primaryMuted,
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -302,7 +304,6 @@ const styles = StyleSheet.create({
     agentName: {
         fontSize: 16,
         fontWeight: '700',
-        color: colors.textPrimary,
     },
     statusRow: {
         flexDirection: 'row',
@@ -314,24 +315,20 @@ const styles = StyleSheet.create({
         width: 6,
         height: 6,
         borderRadius: 3,
-        backgroundColor: colors.green,
     },
     statusText: {
         fontSize: 12,
-        color: colors.green,
         fontWeight: '500',
     },
     closeBtn: {
         width: 36,
         height: 36,
         borderRadius: 18,
-        backgroundColor: colors.gray50,
         alignItems: 'center',
         justifyContent: 'center',
     },
     messagesContainer: {
         flex: 1,
-        backgroundColor: colors.background,
     },
     messagesContent: {
         padding: 20,
@@ -346,7 +343,6 @@ const styles = StyleSheet.create({
         width: 72,
         height: 72,
         borderRadius: 36,
-        backgroundColor: colors.primaryMuted,
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: 20,
@@ -354,12 +350,10 @@ const styles = StyleSheet.create({
     welcomeTitle: {
         fontSize: 22,
         fontWeight: '700',
-        color: colors.textPrimary,
         marginBottom: 10,
     },
     welcomeText: {
         fontSize: 15,
-        color: colors.textSecondary,
         textAlign: 'center',
         lineHeight: 22,
         marginBottom: 24,
@@ -371,17 +365,14 @@ const styles = StyleSheet.create({
         gap: 10,
     },
     suggestionPill: {
-        backgroundColor: colors.white,
         paddingHorizontal: 16,
         paddingVertical: 10,
         borderRadius: 20,
         borderWidth: 1,
-        borderColor: colors.gray200,
     },
     suggestionText: {
         fontSize: 13,
         fontWeight: '500',
-        color: colors.primary,
     },
     messageRow: {
         flexDirection: 'row',
@@ -397,7 +388,6 @@ const styles = StyleSheet.create({
         width: 24,
         height: 24,
         borderRadius: 12,
-        backgroundColor: colors.primaryMuted,
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 10,
@@ -410,13 +400,11 @@ const styles = StyleSheet.create({
         borderRadius: 18,
     },
     userBubble: {
-        backgroundColor: colors.primary,
         borderBottomRightRadius: 6,
     },
     agentBubble: {
-        backgroundColor: colors.white,
         borderBottomLeftRadius: 6,
-        shadowColor: colors.black,
+        shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.04,
         shadowRadius: 6,
@@ -425,10 +413,9 @@ const styles = StyleSheet.create({
     messageText: {
         fontSize: 15,
         lineHeight: 21,
-        color: colors.textPrimary,
     },
     userMessageText: {
-        color: colors.white,
+        color: '#FFF',
     },
     typingIndicator: {
         flexDirection: 'row',
@@ -439,37 +426,28 @@ const styles = StyleSheet.create({
         width: 7,
         height: 7,
         borderRadius: 3.5,
-        backgroundColor: colors.gray300,
     },
     inputContainer: {
         flexDirection: 'row',
         alignItems: 'flex-end',
         padding: 16,
         paddingBottom: Platform.OS === 'ios' ? 34 : 16,
-        backgroundColor: colors.white,
         borderTopWidth: 1,
-        borderTopColor: colors.gray100,
         gap: 12,
     },
     input: {
         flex: 1,
-        backgroundColor: colors.gray50,
         borderRadius: 24,
         paddingHorizontal: 18,
         paddingVertical: 12,
         fontSize: 15,
-        color: colors.textPrimary,
         maxHeight: 100,
     },
     sendBtn: {
         width: 44,
         height: 44,
         borderRadius: 22,
-        backgroundColor: colors.primary,
         alignItems: 'center',
         justifyContent: 'center',
-    },
-    sendBtnDisabled: {
-        backgroundColor: colors.gray200,
     },
 });

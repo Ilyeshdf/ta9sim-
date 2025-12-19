@@ -1,6 +1,5 @@
 import { StyleSheet, ScrollView, View as RNView, TouchableOpacity, RefreshControl } from 'react-native';
 import { Text, View } from '@/components/Themed';
-import { colors } from '@/constants/Colors';
 import { 
   TrendingUp, Target, Zap, Award, ChevronRight, 
   GraduationCap, Activity, Briefcase, Users, Flame
@@ -85,7 +84,7 @@ function AnimatedCounter({
 }
 
 export default function AnalyticsScreen() {
-  const { tasks, metrics } = useApp();
+  const { tasks, metrics, theme } = useApp();
   const [refreshing, setRefreshing] = useState(false);
   
   const completedTasks = tasks.filter(t => t.completed).length;
@@ -125,16 +124,16 @@ export default function AnalyticsScreen() {
 
   const getCategoryColor = (category: string) => {
     switch (category) {
-      case 'Academics': return { main: colors.blue, bg: colors.blueMuted };
-      case 'Wellness': return { main: colors.green, bg: colors.greenMuted };
-      case 'Work': return { main: colors.purple, bg: colors.purpleMuted };
-      case 'Social': return { main: colors.orange, bg: colors.orangeMuted };
-      default: return { main: colors.primary, bg: colors.primaryMuted };
+      case 'Academics': return { main: theme.blue, bg: theme.blueMuted };
+      case 'Wellness': return { main: theme.green, bg: theme.greenMuted };
+      case 'Work': return { main: theme.purple, bg: theme.purpleMuted };
+      case 'Social': return { main: theme.orange, bg: theme.orangeMuted };
+      default: return { main: theme.primary, bg: theme.primaryMuted };
     }
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       <ScrollView 
         style={styles.scrollView} 
         showsVerticalScrollIndicator={false}
@@ -142,82 +141,84 @@ export default function AnalyticsScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={colors.primary}
+            tintColor={theme.primary}
           />
         }
       >
-        {/* Header - Animated */}
+        {/* Header */}
         <Animated.View 
           style={styles.header}
           entering={FadeInDown.duration(500).springify()}
         >
-          <Text style={styles.headerTitle}>Analytics</Text>
+          <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>Analytics</Text>
           <AnimatedTouchable 
-            style={styles.periodSelector}
+            style={[styles.periodSelector, { backgroundColor: theme.card }]}
             entering={FadeInRight.delay(200).duration(400)}
           >
-            <Text style={styles.periodText}>This Week</Text>
-            <ChevronRight color={colors.primary} size={16} />
+            <Text style={[styles.periodText, { color: theme.primary }]}>This Week</Text>
+            <ChevronRight color={theme.primary} size={16} />
           </AnimatedTouchable>
         </Animated.View>
 
-        {/* Main Stats Grid - Animated */}
+        {/* Main Stats Grid */}
         <View style={styles.statsGrid}>
           <Animated.View 
-            style={[styles.statCardLarge, { backgroundColor: colors.primaryMuted }]}
+            style={[styles.statCardLarge, { backgroundColor: theme.primaryMuted }]}
             entering={FadeInDown.delay(100).duration(500).springify()}
           >
-            <View style={styles.statCardHeader}>
+            <View style={[styles.statCardHeader, { backgroundColor: 'transparent' }]}>
               <Animated.View 
-                style={[styles.statIconCircle, { backgroundColor: colors.primary + '20' }]}
+                style={[styles.statIconCircle, { backgroundColor: theme.primary + '20' }]}
                 entering={FadeIn.delay(300).duration(300)}
               >
-                <Target color={colors.primary} size={20} />
+                <Target color={theme.primary} size={20} />
               </Animated.View>
-              <TrendingUp color={colors.green} size={16} />
+              <TrendingUp color={theme.green} size={16} />
             </View>
-            <AnimatedCounter value={completionRate} suffix="%" delay={400} />
-            <Text style={styles.statLabelLarge}>Completion Rate</Text>
-            <AnimatedProgressBar progress={completionRate} color={colors.primary} delay={500} />
+            <Text style={[styles.statValueLarge, { color: theme.textPrimary }]}>{completionRate}%</Text>
+            <Text style={[styles.statLabelLarge, { color: theme.textSecondary }]}>Completion Rate</Text>
+            <View style={[styles.progressBarBg, { backgroundColor: 'rgba(0,0,0,0.08)' }]}>
+              <Animated.View style={[styles.progressBarFill, { width: `${completionRate}%`, backgroundColor: theme.primary }]} />
+            </View>
           </Animated.View>
           
           <View style={styles.statColRight}>
             <Animated.View 
-              style={[styles.statCardSmall, { backgroundColor: colors.greenMuted }]}
+              style={[styles.statCardSmall, { backgroundColor: theme.greenMuted }]}
               entering={FadeInRight.delay(200).duration(400).springify()}
             >
-              <View style={[styles.statIconSmall, { backgroundColor: colors.green + '20' }]}>
-                <Zap color={colors.green} size={16} />
+              <View style={[styles.statIconSmall, { backgroundColor: theme.green + '20' }]}>
+                <Zap color={theme.green} size={16} />
               </View>
-              <Text style={styles.statValueSmall}>{completedTasks}</Text>
-              <Text style={styles.statLabelSmall}>Completed</Text>
+              <Text style={[styles.statValueSmall, { color: theme.textPrimary }]}>{completedTasks}</Text>
+              <Text style={[styles.statLabelSmall, { color: theme.textSecondary }]}>Completed</Text>
             </Animated.View>
             <Animated.View 
-              style={[styles.statCardSmall, { backgroundColor: colors.orangeMuted }]}
+              style={[styles.statCardSmall, { backgroundColor: theme.orangeMuted }]}
               entering={FadeInRight.delay(300).duration(400).springify()}
             >
-              <View style={[styles.statIconSmall, { backgroundColor: colors.orange + '20' }]}>
-                <Flame color={colors.orange} size={16} />
+              <View style={[styles.statIconSmall, { backgroundColor: theme.orange + '20' }]}>
+                <Flame color={theme.orange} size={16} />
               </View>
-              <Text style={styles.statValueSmall}>{metrics.energy}%</Text>
-              <Text style={styles.statLabelSmall}>Energy</Text>
+              <Text style={[styles.statValueSmall, { color: theme.textPrimary }]}>{metrics.energy}%</Text>
+              <Text style={[styles.statLabelSmall, { color: theme.textSecondary }]}>Energy</Text>
             </Animated.View>
           </View>
         </View>
 
-        {/* Productivity Chart - Animated */}
+        {/* Productivity Chart */}
         <Animated.View 
-          style={styles.chartCard}
+          style={[styles.chartCard, { backgroundColor: theme.card }]}
           entering={FadeInDown.delay(300).duration(500).springify()}
         >
-          <View style={styles.chartHeader}>
-            <Text style={styles.chartTitle}>Weekly Trend</Text>
+          <View style={[styles.chartHeader, { backgroundColor: 'transparent' }]}>
+            <Text style={[styles.chartTitle, { color: theme.textPrimary }]}>Weekly Trend</Text>
             <Animated.View 
-              style={styles.chartBadge}
+              style={[styles.chartBadge, { backgroundColor: theme.greenMuted }]}
               entering={FadeIn.delay(500).duration(300)}
             >
-              <TrendingUp color={colors.green} size={12} />
-              <Text style={styles.chartBadgeText}>+12%</Text>
+              <TrendingUp color={theme.green} size={12} />
+              <Text style={[styles.chartBadgeText, { color: theme.green }]}>+12%</Text>
             </Animated.View>
           </View>
           
@@ -233,30 +234,30 @@ export default function AnalyticsScreen() {
                   style={styles.chartBarWrapper}
                   entering={FadeInUp.delay(400 + index * 80).duration(400).springify()}
                 >
-                  <View style={styles.chartBarBg}>
+                  <View style={[styles.chartBarBg, { backgroundColor: theme.gray100 }]}>
                     <Animated.View 
                       style={[
                         styles.chartBarFill, 
                         { 
                           height: `${height}%`,
-                          backgroundColor: isHigh ? colors.green : isMedium ? colors.orange : colors.gray300,
+                          backgroundColor: isHigh ? theme.green : isMedium ? theme.orange : theme.gray300,
                         }
                       ]} 
                     />
                   </View>
-                  <Text style={styles.chartBarLabel}>{day}</Text>
+                  <Text style={[styles.chartBarLabel, { color: theme.textTertiary }]}>{day}</Text>
                 </Animated.View>
               );
             })}
           </View>
         </Animated.View>
 
-        {/* Category Breakdown - Animated */}
+        {/* Category Breakdown */}
         <Animated.View 
           style={styles.section}
           entering={FadeInDown.delay(500).duration(500)}
         >
-          <Text style={styles.sectionTitle}>Category Balance</Text>
+          <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>Category Balance</Text>
           
           <View style={styles.categoryGrid}>
             {Object.entries(categoryCounts).map(([category, count], index) => {
@@ -273,38 +274,36 @@ export default function AnalyticsScreen() {
                   <View style={[styles.categoryIconCircle, { backgroundColor: colorSet.main + '20' }]}>
                     <Icon color={colorSet.main} size={18} />
                   </View>
-                  <Text style={styles.categoryValue}>{count}</Text>
-                  <Text style={styles.categoryLabel}>{category}</Text>
-                  <AnimatedProgressBar 
-                    progress={percentage} 
-                    color={colorSet.main} 
-                    delay={700 + index * 100}
-                  />
+                  <Text style={[styles.categoryValue, { color: theme.textPrimary }]}>{count}</Text>
+                  <Text style={[styles.categoryLabel, { color: theme.textSecondary }]}>{category}</Text>
+                  <View style={[styles.progressBarBg, { backgroundColor: 'rgba(0,0,0,0.08)' }]}>
+                    <Animated.View style={[styles.progressBarFill, { width: `${percentage}%`, backgroundColor: colorSet.main }]} />
+                  </View>
                 </Animated.View>
               );
             })}
           </View>
         </Animated.View>
 
-        {/* Insights Section - Animated */}
+        {/* Insights Section */}
         <Animated.View 
-          style={styles.insightsCard}
+          style={[styles.insightsCard, { backgroundColor: theme.card }]}
           entering={FadeInDown.delay(800).duration(500).springify()}
         >
-          <View style={styles.insightsHeader}>
+          <View style={[styles.insightsHeader, { backgroundColor: 'transparent' }]}>
             <Animated.View 
-              style={styles.insightsIconCircle}
+              style={[styles.insightsIconCircle, { backgroundColor: theme.primaryMuted }]}
               entering={FadeIn.delay(900).duration(300)}
             >
-              <Award color={colors.primary} size={20} />
+              <Award color={theme.primary} size={20} />
             </Animated.View>
-            <View style={styles.insightsHeaderText}>
-              <Text style={styles.insightsTitle}>AI Insights</Text>
-              <Text style={styles.insightsSubtitle}>Based on your patterns</Text>
+            <View style={[styles.insightsHeaderText, { backgroundColor: 'transparent' }]}>
+              <Text style={[styles.insightsTitle, { color: theme.textPrimary }]}>AI Insights</Text>
+              <Text style={[styles.insightsSubtitle, { color: theme.textSecondary }]}>Based on your patterns</Text>
             </View>
           </View>
           
-          <View style={styles.insightsList}>
+          <View style={[styles.insightsList, { backgroundColor: 'transparent' }]}>
             {[
               { 
                 emoji: '🔥', 
@@ -323,11 +322,11 @@ export default function AnalyticsScreen() {
             ].map((insight, index) => (
               <Animated.View 
                 key={index}
-                style={styles.insightItem}
+                style={[styles.insightItem, { backgroundColor: 'transparent' }]}
                 entering={FadeInRight.delay(1000 + index * 100).duration(400)}
               >
                 <Text style={styles.insightEmoji}>{insight.emoji}</Text>
-                <Text style={styles.insightText}>{insight.text}</Text>
+                <Text style={[styles.insightText, { color: theme.textSecondary }]}>{insight.text}</Text>
               </Animated.View>
             ))}
           </View>
@@ -342,7 +341,6 @@ export default function AnalyticsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   scrollView: {
     flex: 1,
@@ -359,17 +357,15 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 28,
     fontWeight: '700',
-    color: colors.textPrimary,
   },
   periodSelector: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: colors.white,
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 12,
-    shadowColor: colors.black,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
@@ -378,7 +374,6 @@ const styles = StyleSheet.create({
   periodText: {
     fontSize: 13,
     fontWeight: '600',
-    color: colors.primary,
   },
   statsGrid: {
     flexDirection: 'row',
@@ -396,7 +391,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
-    backgroundColor: 'transparent',
   },
   statIconCircle: {
     width: 40,
@@ -408,17 +402,14 @@ const styles = StyleSheet.create({
   statValueLarge: {
     fontSize: 36,
     fontWeight: '700',
-    color: colors.textPrimary,
   },
   statLabelLarge: {
     fontSize: 13,
-    color: colors.textSecondary,
     marginTop: 4,
     marginBottom: 16,
   },
   progressBarBg: {
     height: 6,
-    backgroundColor: 'rgba(0,0,0,0.08)',
     borderRadius: 3,
     overflow: 'hidden',
   },
@@ -448,20 +439,17 @@ const styles = StyleSheet.create({
   statValueSmall: {
     fontSize: 22,
     fontWeight: '700',
-    color: colors.textPrimary,
   },
   statLabelSmall: {
     fontSize: 11,
-    color: colors.textSecondary,
     marginTop: 2,
   },
   chartCard: {
     marginHorizontal: 24,
-    backgroundColor: colors.white,
     borderRadius: 20,
     padding: 20,
     marginBottom: 24,
-    shadowColor: colors.black,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 12,
@@ -472,18 +460,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 20,
-    backgroundColor: 'transparent',
   },
   chartTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.textPrimary,
   },
   chartBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: colors.greenMuted,
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 8,
@@ -491,7 +476,6 @@ const styles = StyleSheet.create({
   chartBadgeText: {
     fontSize: 12,
     fontWeight: '600',
-    color: colors.green,
   },
   chartContainer: {
     flexDirection: 'row',
@@ -506,7 +490,6 @@ const styles = StyleSheet.create({
   chartBarBg: {
     flex: 1,
     width: '100%',
-    backgroundColor: colors.gray100,
     borderRadius: 8,
     justifyContent: 'flex-end',
     overflow: 'hidden',
@@ -518,7 +501,6 @@ const styles = StyleSheet.create({
   chartBarLabel: {
     fontSize: 11,
     fontWeight: '600',
-    color: colors.textTertiary,
     marginTop: 8,
   },
   section: {
@@ -529,7 +511,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: colors.textPrimary,
     marginBottom: 16,
   },
   categoryGrid: {
@@ -554,20 +535,17 @@ const styles = StyleSheet.create({
   categoryValue: {
     fontSize: 24,
     fontWeight: '700',
-    color: colors.textPrimary,
   },
   categoryLabel: {
     fontSize: 12,
-    color: colors.textSecondary,
     marginTop: 2,
     marginBottom: 12,
   },
   insightsCard: {
     marginHorizontal: 24,
-    backgroundColor: colors.white,
     borderRadius: 20,
     padding: 20,
-    shadowColor: colors.black,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 12,
@@ -577,40 +555,33 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
-    backgroundColor: 'transparent',
   },
   insightsIconCircle: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: colors.primaryMuted,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 14,
   },
   insightsHeaderText: {
     flex: 1,
-    backgroundColor: 'transparent',
   },
   insightsTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.textPrimary,
   },
   insightsSubtitle: {
     fontSize: 13,
-    color: colors.textSecondary,
     marginTop: 2,
   },
   insightsList: {
     gap: 16,
-    backgroundColor: 'transparent',
   },
   insightItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 12,
-    backgroundColor: 'transparent',
   },
   insightEmoji: {
     fontSize: 18,
@@ -619,7 +590,6 @@ const styles = StyleSheet.create({
   insightText: {
     flex: 1,
     fontSize: 14,
-    color: colors.textSecondary,
     lineHeight: 20,
   },
 });

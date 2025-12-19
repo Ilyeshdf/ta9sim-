@@ -1,175 +1,182 @@
 import { StyleSheet, ScrollView, TouchableOpacity, Switch, View as RNView } from 'react-native';
 import { Text, View } from '@/components/Themed';
-import { colors } from '@/constants/Colors';
 import { 
   User, Bell, Moon, Lock, HelpCircle, LogOut, ChevronRight, 
   Edit3, Award, Target, Zap, Settings, Shield
 } from 'lucide-react-native';
 import { useState } from 'react';
 import { useApp } from '@/contexts/AppContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { router } from 'expo-router';
+import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 
 export default function ProfileScreen() {
   const [notifications, setNotifications] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
-  const { tasks, userName, metrics } = useApp();
+  const { tasks, userName, metrics, theme, themeMode, setThemeMode, isDark } = useApp();
+  const { logout } = useAuth();
   
   const completedTasks = tasks.filter(t => t.completed).length;
   const totalTasks = tasks.length;
   const successRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
+  const handleLogout = async () => {
+    await logout();
+    router.replace('/(auth)/login');
+  };
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Profile Header */}
-        <View style={styles.header}>
-          <View style={styles.profileImageContainer}>
-            <View style={styles.profileImage}>
+        <Animated.View style={styles.header} entering={FadeInDown.duration(500)}>
+          <View style={[styles.profileImageContainer, { backgroundColor: 'transparent' }]}>
+            <View style={[styles.profileImage, { backgroundColor: theme.primaryMuted, borderColor: theme.card }]}>
               <Text style={styles.profileEmoji}>👨‍💼</Text>
             </View>
-            <TouchableOpacity style={styles.editImageBtn}>
-              <Edit3 color={colors.white} size={12} />
+            <TouchableOpacity style={[styles.editImageBtn, { backgroundColor: theme.primary, borderColor: theme.background }]}>
+              <Edit3 color={theme.white} size={12} />
             </TouchableOpacity>
           </View>
-          <Text style={styles.userName}>{userName}</Text>
-          <Text style={styles.userEmail}>alex.johnson@student.edu</Text>
-          <TouchableOpacity style={styles.editProfileBtn}>
-            <Text style={styles.editProfileText}>Edit Profile</Text>
+          <Text style={[styles.userName, { color: theme.textPrimary }]}>{userName}</Text>
+          <Text style={[styles.userEmail, { color: theme.textSecondary }]}>alex.johnson@student.edu</Text>
+          <TouchableOpacity style={[styles.editProfileBtn, { borderColor: theme.primary }]}>
+            <Text style={[styles.editProfileText, { color: theme.primary }]}>Edit Profile</Text>
           </TouchableOpacity>
-        </View>
+        </Animated.View>
 
         {/* Stats Row */}
-        <View style={styles.statsCard}>
-          <View style={styles.statItem}>
-            <View style={[styles.statIcon, { backgroundColor: colors.blueMuted }]}>
-              <Target color={colors.blue} size={18} />
+        <Animated.View style={[styles.statsCard, { backgroundColor: theme.card }]} entering={FadeInUp.delay(100).duration(400)}>
+          <View style={[styles.statItem, { backgroundColor: 'transparent' }]}>
+            <View style={[styles.statIcon, { backgroundColor: theme.blueMuted }]}>
+              <Target color={theme.blue} size={18} />
             </View>
-            <Text style={styles.statValue}>{completedTasks}</Text>
-            <Text style={styles.statLabel}>Tasks Done</Text>
+            <Text style={[styles.statValue, { color: theme.textPrimary }]}>{completedTasks}</Text>
+            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Tasks Done</Text>
           </View>
           
-          <View style={styles.statDivider} />
+          <View style={[styles.statDivider, { backgroundColor: theme.gray200 }]} />
           
-          <View style={styles.statItem}>
-            <View style={[styles.statIcon, { backgroundColor: colors.orangeMuted }]}>
-              <Zap color={colors.orange} size={18} />
+          <View style={[styles.statItem, { backgroundColor: 'transparent' }]}>
+            <View style={[styles.statIcon, { backgroundColor: theme.orangeMuted }]}>
+              <Zap color={theme.orange} size={18} />
             </View>
-            <Text style={styles.statValue}>{metrics.energy}%</Text>
-            <Text style={styles.statLabel}>Energy</Text>
+            <Text style={[styles.statValue, { color: theme.textPrimary }]}>{metrics.energy}%</Text>
+            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Energy</Text>
           </View>
           
-          <View style={styles.statDivider} />
+          <View style={[styles.statDivider, { backgroundColor: theme.gray200 }]} />
           
-          <View style={styles.statItem}>
-            <View style={[styles.statIcon, { backgroundColor: colors.greenMuted }]}>
-              <Award color={colors.green} size={18} />
+          <View style={[styles.statItem, { backgroundColor: 'transparent' }]}>
+            <View style={[styles.statIcon, { backgroundColor: theme.greenMuted }]}>
+              <Award color={theme.green} size={18} />
             </View>
-            <Text style={styles.statValue}>{successRate}%</Text>
-            <Text style={styles.statLabel}>Success</Text>
+            <Text style={[styles.statValue, { color: theme.textPrimary }]}>{successRate}%</Text>
+            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Success</Text>
           </View>
-        </View>
+        </Animated.View>
 
         {/* Settings Sections */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Preferences</Text>
+        <Animated.View style={[styles.section, { backgroundColor: 'transparent' }]} entering={FadeInUp.delay(200).duration(400)}>
+          <Text style={[styles.sectionTitle, { color: theme.textTertiary }]}>Preferences</Text>
           
-          <View style={styles.settingsCard}>
-            <View style={styles.settingItem}>
-              <View style={styles.settingLeft}>
-                <View style={[styles.settingIcon, { backgroundColor: colors.primaryMuted }]}>
-                  <Bell color={colors.primary} size={18} />
+          <View style={[styles.settingsCard, { backgroundColor: theme.card }]}>
+            <View style={[styles.settingItem, { backgroundColor: 'transparent' }]}>
+              <View style={[styles.settingLeft, { backgroundColor: 'transparent' }]}>
+                <View style={[styles.settingIcon, { backgroundColor: theme.primaryMuted }]}>
+                  <Bell color={theme.primary} size={18} />
                 </View>
-                <View style={styles.settingText}>
-                  <Text style={styles.settingTitle}>Notifications</Text>
-                  <Text style={styles.settingDesc}>Push and in-app alerts</Text>
+                <View style={[styles.settingText, { backgroundColor: 'transparent' }]}>
+                  <Text style={[styles.settingTitle, { color: theme.textPrimary }]}>Notifications</Text>
+                  <Text style={[styles.settingDesc, { color: theme.textTertiary }]}>Push and in-app alerts</Text>
                 </View>
               </View>
               <Switch
                 value={notifications}
                 onValueChange={setNotifications}
-                trackColor={{ false: colors.gray200, true: colors.primary }}
-                thumbColor={colors.white}
+                trackColor={{ false: theme.gray200, true: theme.primary }}
+                thumbColor={theme.white}
               />
             </View>
             
-            <View style={styles.settingDivider} />
+            <View style={[styles.settingDivider, { backgroundColor: theme.gray100 }]} />
             
-            <View style={styles.settingItem}>
-              <View style={styles.settingLeft}>
-                <View style={[styles.settingIcon, { backgroundColor: colors.purpleMuted }]}>
-                  <Moon color={colors.purple} size={18} />
+            <View style={[styles.settingItem, { backgroundColor: 'transparent' }]}>
+              <View style={[styles.settingLeft, { backgroundColor: 'transparent' }]}>
+                <View style={[styles.settingIcon, { backgroundColor: theme.purpleMuted }]}>
+                  <Moon color={theme.purple} size={18} />
                 </View>
-                <View style={styles.settingText}>
-                  <Text style={styles.settingTitle}>Dark Mode</Text>
-                  <Text style={styles.settingDesc}>Reduce eye strain</Text>
+                <View style={[styles.settingText, { backgroundColor: 'transparent' }]}>
+                  <Text style={[styles.settingTitle, { color: theme.textPrimary }]}>Dark Mode</Text>
+                  <Text style={[styles.settingDesc, { color: theme.textTertiary }]}>Reduce eye strain</Text>
                 </View>
               </View>
               <Switch
-                value={darkMode}
-                onValueChange={setDarkMode}
-                trackColor={{ false: colors.gray200, true: colors.primary }}
-                thumbColor={colors.white}
+                value={isDark}
+                onValueChange={(value) => setThemeMode(value ? 'dark' : 'light')}
+                trackColor={{ false: theme.gray200, true: theme.primary }}
+                thumbColor={theme.white}
               />
             </View>
           </View>
-        </View>
+        </Animated.View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Account</Text>
+        <Animated.View style={[styles.section, { backgroundColor: 'transparent' }]} entering={FadeInUp.delay(300).duration(400)}>
+          <Text style={[styles.sectionTitle, { color: theme.textTertiary }]}>Account</Text>
           
-          <TouchableOpacity style={styles.menuItem}>
-            <View style={styles.menuLeft}>
-              <View style={[styles.menuIcon, { backgroundColor: colors.blueMuted }]}>
-                <User color={colors.blue} size={18} />
+          <TouchableOpacity style={[styles.menuItem, { backgroundColor: theme.card }]}>
+            <View style={[styles.menuLeft, { backgroundColor: 'transparent' }]}>
+              <View style={[styles.menuIcon, { backgroundColor: theme.blueMuted }]}>
+                <User color={theme.blue} size={18} />
               </View>
-              <Text style={styles.menuText}>Personal Information</Text>
+              <Text style={[styles.menuText, { color: theme.textPrimary }]}>Personal Information</Text>
             </View>
-            <ChevronRight color={colors.gray400} size={18} />
+            <ChevronRight color={theme.gray400} size={18} />
           </TouchableOpacity>
           
-          <TouchableOpacity style={styles.menuItem}>
-            <View style={styles.menuLeft}>
-              <View style={[styles.menuIcon, { backgroundColor: colors.greenMuted }]}>
-                <Shield color={colors.green} size={18} />
+          <TouchableOpacity style={[styles.menuItem, { backgroundColor: theme.card }]}>
+            <View style={[styles.menuLeft, { backgroundColor: 'transparent' }]}>
+              <View style={[styles.menuIcon, { backgroundColor: theme.greenMuted }]}>
+                <Shield color={theme.green} size={18} />
               </View>
-              <Text style={styles.menuText}>Privacy & Security</Text>
+              <Text style={[styles.menuText, { color: theme.textPrimary }]}>Privacy & Security</Text>
             </View>
-            <ChevronRight color={colors.gray400} size={18} />
+            <ChevronRight color={theme.gray400} size={18} />
           </TouchableOpacity>
           
-          <TouchableOpacity style={styles.menuItem}>
-            <View style={styles.menuLeft}>
-              <View style={[styles.menuIcon, { backgroundColor: colors.gray100 }]}>
-                <Settings color={colors.textSecondary} size={18} />
+          <TouchableOpacity style={[styles.menuItem, { backgroundColor: theme.card }]}>
+            <View style={[styles.menuLeft, { backgroundColor: 'transparent' }]}>
+              <View style={[styles.menuIcon, { backgroundColor: theme.gray100 }]}>
+                <Settings color={theme.textSecondary} size={18} />
               </View>
-              <Text style={styles.menuText}>App Settings</Text>
+              <Text style={[styles.menuText, { color: theme.textPrimary }]}>App Settings</Text>
             </View>
-            <ChevronRight color={colors.gray400} size={18} />
+            <ChevronRight color={theme.gray400} size={18} />
           </TouchableOpacity>
-        </View>
+        </Animated.View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Support</Text>
+        <Animated.View style={[styles.section, { backgroundColor: 'transparent' }]} entering={FadeInUp.delay(400).duration(400)}>
+          <Text style={[styles.sectionTitle, { color: theme.textTertiary }]}>Support</Text>
           
-          <TouchableOpacity style={styles.menuItem}>
-            <View style={styles.menuLeft}>
-              <View style={[styles.menuIcon, { backgroundColor: colors.orangeMuted }]}>
-                <HelpCircle color={colors.orange} size={18} />
+          <TouchableOpacity style={[styles.menuItem, { backgroundColor: theme.card }]}>
+            <View style={[styles.menuLeft, { backgroundColor: 'transparent' }]}>
+              <View style={[styles.menuIcon, { backgroundColor: theme.orangeMuted }]}>
+                <HelpCircle color={theme.orange} size={18} />
               </View>
-              <Text style={styles.menuText}>Help & Support</Text>
+              <Text style={[styles.menuText, { color: theme.textPrimary }]}>Help & Support</Text>
             </View>
-            <ChevronRight color={colors.gray400} size={18} />
+            <ChevronRight color={theme.gray400} size={18} />
           </TouchableOpacity>
-        </View>
+        </Animated.View>
 
         {/* Logout Button */}
-        <TouchableOpacity style={styles.logoutBtn}>
-          <LogOut color={colors.error} size={18} />
-          <Text style={styles.logoutText}>Log Out</Text>
+        <TouchableOpacity style={[styles.logoutBtn, { backgroundColor: theme.error + '10' }]} onPress={handleLogout}>
+          <LogOut color={theme.error} size={18} />
+          <Text style={[styles.logoutText, { color: theme.error }]}>Log Out</Text>
         </TouchableOpacity>
 
-        <View style={styles.footer}>
-          <Text style={styles.versionText}>Version 1.0.0</Text>
-          <Text style={styles.copyrightText}>Made with care for productivity</Text>
+        <View style={[styles.footer, { backgroundColor: 'transparent' }]}>
+          <Text style={[styles.versionText, { color: theme.textTertiary }]}>Version 1.0.0</Text>
+          <Text style={[styles.copyrightText, { color: theme.gray400 }]}>Made with care for productivity</Text>
         </View>
 
         <View style={{ height: 140 }} />
@@ -181,7 +188,6 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   scrollView: {
     flex: 1,
@@ -200,12 +206,9 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: colors.primaryMuted,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 3,
-    borderColor: colors.white,
-    shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 12,
@@ -221,21 +224,17 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 3,
-    borderColor: colors.background,
   },
   userName: {
     fontSize: 24,
     fontWeight: '700',
-    color: colors.textPrimary,
     marginBottom: 4,
   },
   userEmail: {
     fontSize: 14,
-    color: colors.textSecondary,
     marginBottom: 16,
   },
   editProfileBtn: {
@@ -243,21 +242,18 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: colors.primary,
   },
   editProfileText: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.primary,
   },
   statsCard: {
     flexDirection: 'row',
     marginHorizontal: 24,
-    backgroundColor: colors.white,
     borderRadius: 20,
     padding: 20,
     marginBottom: 24,
-    shadowColor: colors.black,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 12,
@@ -266,7 +262,6 @@ const styles = StyleSheet.create({
   statItem: {
     flex: 1,
     alignItems: 'center',
-    backgroundColor: 'transparent',
   },
   statIcon: {
     width: 40,
@@ -279,27 +274,22 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 22,
     fontWeight: '700',
-    color: colors.textPrimary,
   },
   statLabel: {
     fontSize: 12,
-    color: colors.textSecondary,
     marginTop: 4,
   },
   statDivider: {
     width: 1,
     height: 60,
-    backgroundColor: colors.gray200,
     alignSelf: 'center',
   },
   section: {
     marginBottom: 24,
-    backgroundColor: 'transparent',
   },
   sectionTitle: {
     fontSize: 13,
     fontWeight: '600',
-    color: colors.textTertiary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: 12,
@@ -307,10 +297,9 @@ const styles = StyleSheet.create({
   },
   settingsCard: {
     marginHorizontal: 24,
-    backgroundColor: colors.white,
     borderRadius: 16,
     overflow: 'hidden',
-    shadowColor: colors.black,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
@@ -321,13 +310,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 16,
-    backgroundColor: 'transparent',
   },
   settingLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-    backgroundColor: 'transparent',
   },
   settingIcon: {
     width: 40,
@@ -339,21 +326,17 @@ const styles = StyleSheet.create({
   },
   settingText: {
     flex: 1,
-    backgroundColor: 'transparent',
   },
   settingTitle: {
     fontSize: 15,
     fontWeight: '600',
-    color: colors.textPrimary,
   },
   settingDesc: {
     fontSize: 13,
-    color: colors.textTertiary,
     marginTop: 2,
   },
   settingDivider: {
     height: 1,
-    backgroundColor: colors.gray100,
     marginLeft: 70,
   },
   menuItem: {
@@ -361,11 +344,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginHorizontal: 24,
-    backgroundColor: colors.white,
     padding: 16,
     borderRadius: 14,
     marginBottom: 8,
-    shadowColor: colors.black,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
@@ -375,7 +357,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-    backgroundColor: 'transparent',
   },
   menuIcon: {
     width: 40,
@@ -388,7 +369,6 @@ const styles = StyleSheet.create({
   menuText: {
     fontSize: 15,
     fontWeight: '600',
-    color: colors.textPrimary,
   },
   logoutBtn: {
     flexDirection: 'row',
@@ -396,7 +376,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 10,
     marginHorizontal: 24,
-    backgroundColor: colors.error + '10',
     paddingVertical: 16,
     borderRadius: 14,
     marginBottom: 24,
@@ -404,20 +383,16 @@ const styles = StyleSheet.create({
   logoutText: {
     fontSize: 15,
     fontWeight: '600',
-    color: colors.error,
   },
   footer: {
     alignItems: 'center',
     paddingVertical: 16,
-    backgroundColor: 'transparent',
   },
   versionText: {
     fontSize: 13,
-    color: colors.textTertiary,
     marginBottom: 4,
   },
   copyrightText: {
     fontSize: 12,
-    color: colors.gray400,
   },
 });
