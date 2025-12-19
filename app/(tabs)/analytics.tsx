@@ -1,0 +1,625 @@
+import { StyleSheet, ScrollView, View as RNView, TouchableOpacity, RefreshControl } from 'react-native';
+import { Text, View } from '@/components/Themed';
+import { colors } from '@/constants/Colors';
+import { 
+  TrendingUp, Target, Zap, Award, ChevronRight, 
+  GraduationCap, Activity, Briefcase, Users, Flame
+} from 'lucide-react-native';
+import { useApp } from '@/contexts/AppContext';
+import { useState, useCallback, useEffect } from 'react';
+import Animated, { 
+  FadeInDown, 
+  FadeInRight,
+  FadeInUp,
+  FadeIn,
+  useAnimatedStyle, 
+  useSharedValue, 
+  withSpring,
+  withTiming,
+  withDelay,
+  interpolate,
+  Easing,
+} from 'react-native-reanimated';
+
+const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
+
+// Animated Progress Bar Component
+function AnimatedProgressBar({ 
+  progress, 
+  color, 
+  delay = 0 
+}: { 
+  progress: number; 
+  color: string;
+  delay?: number;
+}) {
+  const width = useSharedValue(0);
+  
+  useEffect(() => {
+    width.value = withDelay(delay, withSpring(progress, {
+      damping: 15,
+      stiffness: 80,
+    }));
+  }, [progress]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    width: `${width.value}%`,
+    backgroundColor: color,
+  }));
+
+  return (
+    <View style={styles.progressBarBg}>
+      <Animated.View style={[styles.progressBarFill, animatedStyle]} />
+    </View>
+  );
+}
+
+// Animated Counter Component
+function AnimatedCounter({ 
+  value, 
+  suffix = '', 
+  delay = 0 
+}: { 
+  value: number; 
+  suffix?: string;
+  delay?: number;
+}) {
+  const animatedValue = useSharedValue(0);
+  
+  useEffect(() => {
+    animatedValue.value = withDelay(delay, withTiming(value, {
+      duration: 800,
+      easing: Easing.out(Easing.cubic),
+    }));
+  }, [value]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(animatedValue.value, [0, value], [0.5, 1]),
+  }));
+
+  return (
+    <Animated.Text style={[styles.statValueLarge, animatedStyle]}>
+      {Math.round(value)}{suffix}
+    </Animated.Text>
+  );
+}
+
+export default function AnalyticsScreen() {
+  const { tasks, metrics } = useApp();
+  const [refreshing, setRefreshing] = useState(false);
+  
+  const completedTasks = tasks.filter(t => t.completed).length;
+  const totalTasks = tasks.length;
+  const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+  
+  const categoryCounts = {
+    Academics: tasks.filter(t => t.category === 'Academics').length,
+    Wellness: tasks.filter(t => t.category === 'Wellness').length,
+    Work: tasks.filter(t => t.category === 'Work').length,
+    Social: tasks.filter(t => t.category === 'Social').length,
+  };
+  const categoryTotal = totalTasks || 1;
+  
+  const weekDays = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  const baseProductivity = metrics.energy;
+  const productivity = weekDays.map((_, i) => {
+    const variation = Math.floor(Math.random() * 20) - 10;
+    return Math.min(100, Math.max(30, baseProductivity + variation));
+  });
+  const maxValue = Math.max(...productivity);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => setRefreshing(false), 1500);
+  }, []);
+
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case 'Academics': return GraduationCap;
+      case 'Wellness': return Activity;
+      case 'Work': return Briefcase;
+      case 'Social': return Users;
+      default: return GraduationCap;
+    }
+  };
+
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'Academics': return { main: colors.blue, bg: colors.blueMuted };
+      case 'Wellness': return { main: colors.green, bg: colors.greenMuted };
+      case 'Work': return { main: colors.purple, bg: colors.purpleMuted };
+      case 'Social': return { main: colors.orange, bg: colors.orangeMuted };
+      default: return { main: colors.primary, bg: colors.primaryMuted };
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <ScrollView 
+        style={styles.scrollView} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.primary}
+          />
+        }
+      >
+        {/* Header - Animated */}
+        <Animated.View 
+          style={styles.header}
+          entering={FadeInDown.duration(500).springify()}
+        >
+          <Text style={styles.headerTitle}>Analytics</Text>
+          <AnimatedTouchable 
+            style={styles.periodSelector}
+            entering={FadeInRight.delay(200).duration(400)}
+          >
+            <Text style={styles.periodText}>This Week</Text>
+            <ChevronRight color={colors.primary} size={16} />
+          </AnimatedTouchable>
+        </Animated.View>
+
+        {/* Main Stats Grid - Animated */}
+        <View style={styles.statsGrid}>
+          <Animated.View 
+            style={[styles.statCardLarge, { backgroundColor: colors.primaryMuted }]}
+            entering={FadeInDown.delay(100).duration(500).springify()}
+          >
+            <View style={styles.statCardHeader}>
+              <Animated.View 
+                style={[styles.statIconCircle, { backgroundColor: colors.primary + '20' }]}
+                entering={FadeIn.delay(300).duration(300)}
+              >
+                <Target color={colors.primary} size={20} />
+              </Animated.View>
+              <TrendingUp color={colors.green} size={16} />
+            </View>
+            <AnimatedCounter value={completionRate} suffix="%" delay={400} />
+            <Text style={styles.statLabelLarge}>Completion Rate</Text>
+            <AnimatedProgressBar progress={completionRate} color={colors.primary} delay={500} />
+          </Animated.View>
+          
+          <View style={styles.statColRight}>
+            <Animated.View 
+              style={[styles.statCardSmall, { backgroundColor: colors.greenMuted }]}
+              entering={FadeInRight.delay(200).duration(400).springify()}
+            >
+              <View style={[styles.statIconSmall, { backgroundColor: colors.green + '20' }]}>
+                <Zap color={colors.green} size={16} />
+              </View>
+              <Text style={styles.statValueSmall}>{completedTasks}</Text>
+              <Text style={styles.statLabelSmall}>Completed</Text>
+            </Animated.View>
+            <Animated.View 
+              style={[styles.statCardSmall, { backgroundColor: colors.orangeMuted }]}
+              entering={FadeInRight.delay(300).duration(400).springify()}
+            >
+              <View style={[styles.statIconSmall, { backgroundColor: colors.orange + '20' }]}>
+                <Flame color={colors.orange} size={16} />
+              </View>
+              <Text style={styles.statValueSmall}>{metrics.energy}%</Text>
+              <Text style={styles.statLabelSmall}>Energy</Text>
+            </Animated.View>
+          </View>
+        </View>
+
+        {/* Productivity Chart - Animated */}
+        <Animated.View 
+          style={styles.chartCard}
+          entering={FadeInDown.delay(300).duration(500).springify()}
+        >
+          <View style={styles.chartHeader}>
+            <Text style={styles.chartTitle}>Weekly Trend</Text>
+            <Animated.View 
+              style={styles.chartBadge}
+              entering={FadeIn.delay(500).duration(300)}
+            >
+              <TrendingUp color={colors.green} size={12} />
+              <Text style={styles.chartBadgeText}>+12%</Text>
+            </Animated.View>
+          </View>
+          
+          <View style={styles.chartContainer}>
+            {weekDays.map((day, index) => {
+              const height = (productivity[index] / maxValue) * 100;
+              const isHigh = productivity[index] >= 80;
+              const isMedium = productivity[index] >= 60 && productivity[index] < 80;
+              
+              return (
+                <Animated.View 
+                  key={index} 
+                  style={styles.chartBarWrapper}
+                  entering={FadeInUp.delay(400 + index * 80).duration(400).springify()}
+                >
+                  <View style={styles.chartBarBg}>
+                    <Animated.View 
+                      style={[
+                        styles.chartBarFill, 
+                        { 
+                          height: `${height}%`,
+                          backgroundColor: isHigh ? colors.green : isMedium ? colors.orange : colors.gray300,
+                        }
+                      ]} 
+                    />
+                  </View>
+                  <Text style={styles.chartBarLabel}>{day}</Text>
+                </Animated.View>
+              );
+            })}
+          </View>
+        </Animated.View>
+
+        {/* Category Breakdown - Animated */}
+        <Animated.View 
+          style={styles.section}
+          entering={FadeInDown.delay(500).duration(500)}
+        >
+          <Text style={styles.sectionTitle}>Category Balance</Text>
+          
+          <View style={styles.categoryGrid}>
+            {Object.entries(categoryCounts).map(([category, count], index) => {
+              const Icon = getCategoryIcon(category);
+              const colorSet = getCategoryColor(category);
+              const percentage = Math.round((count / categoryTotal) * 100);
+              
+              return (
+                <Animated.View 
+                  key={category} 
+                  style={[styles.categoryCard, { backgroundColor: colorSet.bg }]}
+                  entering={FadeInUp.delay(600 + index * 100).duration(400).springify()}
+                >
+                  <View style={[styles.categoryIconCircle, { backgroundColor: colorSet.main + '20' }]}>
+                    <Icon color={colorSet.main} size={18} />
+                  </View>
+                  <Text style={styles.categoryValue}>{count}</Text>
+                  <Text style={styles.categoryLabel}>{category}</Text>
+                  <AnimatedProgressBar 
+                    progress={percentage} 
+                    color={colorSet.main} 
+                    delay={700 + index * 100}
+                  />
+                </Animated.View>
+              );
+            })}
+          </View>
+        </Animated.View>
+
+        {/* Insights Section - Animated */}
+        <Animated.View 
+          style={styles.insightsCard}
+          entering={FadeInDown.delay(800).duration(500).springify()}
+        >
+          <View style={styles.insightsHeader}>
+            <Animated.View 
+              style={styles.insightsIconCircle}
+              entering={FadeIn.delay(900).duration(300)}
+            >
+              <Award color={colors.primary} size={20} />
+            </Animated.View>
+            <View style={styles.insightsHeaderText}>
+              <Text style={styles.insightsTitle}>AI Insights</Text>
+              <Text style={styles.insightsSubtitle}>Based on your patterns</Text>
+            </View>
+          </View>
+          
+          <View style={styles.insightsList}>
+            {[
+              { 
+                emoji: '🔥', 
+                text: completedTasks > 0 
+                  ? `Great momentum! You've completed ${completedTasks} tasks.`
+                  : 'Start completing tasks to build momentum!'
+              },
+              { 
+                emoji: '⚡', 
+                text: `Your energy is at ${metrics.energy}% — ${metrics.energy >= 70 ? 'perfect for deep work!' : 'consider taking a break soon.'}`
+              },
+              { 
+                emoji: '🎯', 
+                text: `Burnout risk: ${metrics.burnoutRisk} — ${metrics.burnoutRisk === 'Low' ? "You're in a healthy zone!" : 'Try balancing your workload.'}`
+              },
+            ].map((insight, index) => (
+              <Animated.View 
+                key={index}
+                style={styles.insightItem}
+                entering={FadeInRight.delay(1000 + index * 100).duration(400)}
+              >
+                <Text style={styles.insightEmoji}>{insight.emoji}</Text>
+                <Text style={styles.insightText}>{insight.text}</Text>
+              </Animated.View>
+            ))}
+          </View>
+        </Animated.View>
+
+        <View style={{ height: 140 }} />
+      </ScrollView>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 60,
+    paddingBottom: 20,
+    backgroundColor: 'transparent',
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: colors.textPrimary,
+  },
+  periodSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: colors.white,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  periodText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.primary,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    paddingHorizontal: 24,
+    gap: 12,
+    marginBottom: 20,
+  },
+  statCardLarge: {
+    flex: 1.2,
+    padding: 20,
+    borderRadius: 20,
+  },
+  statCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+    backgroundColor: 'transparent',
+  },
+  statIconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statValueLarge: {
+    fontSize: 36,
+    fontWeight: '700',
+    color: colors.textPrimary,
+  },
+  statLabelLarge: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    marginTop: 4,
+    marginBottom: 16,
+  },
+  progressBarBg: {
+    height: 6,
+    backgroundColor: 'rgba(0,0,0,0.08)',
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    height: '100%',
+    borderRadius: 3,
+  },
+  statColRight: {
+    flex: 1,
+    gap: 12,
+  },
+  statCardSmall: {
+    flex: 1,
+    padding: 16,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statIconSmall: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  statValueSmall: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: colors.textPrimary,
+  },
+  statLabelSmall: {
+    fontSize: 11,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  chartCard: {
+    marginHorizontal: 24,
+    backgroundColor: colors.white,
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 24,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  chartHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+    backgroundColor: 'transparent',
+  },
+  chartTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.textPrimary,
+  },
+  chartBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: colors.greenMuted,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  chartBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.green,
+  },
+  chartContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    height: 140,
+    gap: 8,
+  },
+  chartBarWrapper: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  chartBarBg: {
+    flex: 1,
+    width: '100%',
+    backgroundColor: colors.gray100,
+    borderRadius: 8,
+    justifyContent: 'flex-end',
+    overflow: 'hidden',
+  },
+  chartBarFill: {
+    width: '100%',
+    borderRadius: 8,
+  },
+  chartBarLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: colors.textTertiary,
+    marginTop: 8,
+  },
+  section: {
+    paddingHorizontal: 24,
+    marginBottom: 24,
+    backgroundColor: 'transparent',
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.textPrimary,
+    marginBottom: 16,
+  },
+  categoryGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  categoryCard: {
+    width: '47%',
+    padding: 16,
+    borderRadius: 16,
+    alignItems: 'center',
+  },
+  categoryIconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  categoryValue: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: colors.textPrimary,
+  },
+  categoryLabel: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginTop: 2,
+    marginBottom: 12,
+  },
+  insightsCard: {
+    marginHorizontal: 24,
+    backgroundColor: colors.white,
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  insightsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+    backgroundColor: 'transparent',
+  },
+  insightsIconCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.primaryMuted,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 14,
+  },
+  insightsHeaderText: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
+  insightsTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.textPrimary,
+  },
+  insightsSubtitle: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  insightsList: {
+    gap: 16,
+    backgroundColor: 'transparent',
+  },
+  insightItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    backgroundColor: 'transparent',
+  },
+  insightEmoji: {
+    fontSize: 18,
+    marginTop: 2,
+  },
+  insightText: {
+    flex: 1,
+    fontSize: 14,
+    color: colors.textSecondary,
+    lineHeight: 20,
+  },
+});
