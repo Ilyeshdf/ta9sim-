@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "daily-student-priority-advisor"
+version = "0.1.0"
+description = "Daily Student Priority Advisor using CrewAI"
+authors = ["Your Name <you@example.com>"]
+
+[tool.poetry.dependencies]
+python = ">=3.10,<=3.13"
+crewai = { extras = ["tools"], version = ">=0.80.0,<1.0.0" }
+
+[tool.poetry.scripts]
+daily_student_priority_advisor = "daily_student_priority_advisor.main:run"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,16 +1,14 @@
-import React from 'react';
-import { View, StyleSheet, TouchableOpacity, Platform, Pressable } from 'react-native';
-import { Tabs } from 'expo-router';
-import { Home, Calendar, CheckSquare, BarChart3, User, Plus, Sparkles, Settings } from 'lucide-react-native';
-import { useApp } from '@/contexts/AppContext';
 import AIAgent from '@/components/AIAgent';
-import Animated, { 
-  useAnimatedStyle, 
-  withSpring, 
-  withTiming,
-  useSharedValue,
-  interpolate,
-  Extrapolation,
+import { useApp } from '@/contexts/AppContext';
+import { Tabs } from 'expo-router';
+import { BarChart3, Calendar, CheckSquare, FileText, Home, Settings, Sparkles, User } from 'lucide-react-native';
+import React from 'react';
+import { Platform, Pressable, StyleSheet, View } from 'react-native';
+import Animated, {
+    useAnimatedStyle,
+    useSharedValue,
+    withSpring,
+    withTiming
 } from 'react-native-reanimated';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -55,6 +53,10 @@ function AnimatedTabIcon({
         return <CheckSquare {...iconProps} />;
       case 'analytics':
         return <BarChart3 {...iconProps} />;
+      case 'insights':
+        return <Sparkles {...iconProps} />;
+      case 'documents':
+        return <FileText {...iconProps} />;
       case 'profile':
         return <User {...iconProps} />;
       case 'settings':
@@ -87,7 +89,7 @@ function TabBarBackground({ theme }: { theme: any }) {
 }
 
 export default function TabLayout() {
-  const { theme, isDark } = useApp();
+  const { theme } = useApp();
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
       <Tabs
@@ -102,13 +104,13 @@ export default function TabLayout() {
             right: 20,
             height: 70,
             backgroundColor: Platform.OS === 'ios' 
-              ? (isDark ? 'rgba(26,26,37,0.95)' : 'rgba(255,255,255,0.95)') 
+              ? 'rgba(255,255,255,0.95)'
               : theme.card,
             borderRadius: 35,
             borderTopWidth: 0,
-            shadowColor: isDark ? '#000' : theme.black,
+            shadowColor: theme.black,
             shadowOffset: { width: 0, height: 10 },
-            shadowOpacity: isDark ? 0.4 : 0.15,
+            shadowOpacity: 0.15,
             shadowRadius: 30,
             elevation: 25,
             paddingHorizontal: 8,
@@ -143,6 +145,24 @@ export default function TabLayout() {
             title: 'Tasks',
             tabBarIcon: ({ color, focused }) => (
               <AnimatedTabIcon name="tasks" color={color} focused={focused} theme={theme} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="insights"
+          options={{
+            title: 'AI Insights',
+            tabBarIcon: ({ color, focused }) => (
+              <AnimatedTabIcon name="insights" color={color} focused={focused} theme={theme} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="documents"
+          options={{
+            title: 'Documents',
+            tabBarIcon: ({ color, focused }) => (
+              <AnimatedTabIcon name="documents" color={color} focused={focused} theme={theme} />
             ),
           }}
         />

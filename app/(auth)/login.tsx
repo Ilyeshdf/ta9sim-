@@ -1,21 +1,22 @@
+import { useApp } from '@/contexts/AppContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { router } from 'expo-router';
+import { ArrowRight, Eye, EyeOff, Lock, Mail, Sparkles } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
-    StyleSheet,
-    View,
-    Text,
-    TextInput,
-    TouchableOpacity,
+    ActivityIndicator,
+    Image,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
-    ActivityIndicator,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
-import { Mail, Lock, Eye, EyeOff, Sparkles, ArrowRight } from 'lucide-react-native';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
-import { useAuth } from '@/contexts/AuthContext';
-import { useApp } from '@/contexts/AppContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function LoginScreen() {
     const { theme } = useApp();
@@ -62,8 +63,12 @@ export default function LoginScreen() {
                         style={styles.brandSection}
                         entering={FadeInDown.duration(600).springify()}
                     >
-                        <View style={[styles.logoContainer, { backgroundColor: theme.primaryMuted }]}>
-                            <Sparkles color={theme.primary} size={36} />
+                        <View style={styles.logoContainer}>
+                            <Image
+                                source={require('@/assets/images/logo-taqsim.png')}
+                                style={styles.logo}
+                                resizeMode="contain"
+                            />
                         </View>
                         <Text style={[styles.appName, { color: theme.textPrimary }]}>Ta9sim</Text>
                         <Text style={[styles.tagline, { color: theme.textSecondary }]}>
@@ -204,12 +209,15 @@ const styles = StyleSheet.create({
         marginBottom: 48,
     },
     logoContainer: {
-        width: 80,
-        height: 80,
-        borderRadius: 24,
+        width: 120,
+        height: 120,
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: 16,
+    },
+    logo: {
+        width: '100%',
+        height: '100%',
     },
     appName: {
         fontSize: 32,

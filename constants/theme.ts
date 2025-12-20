@@ -1,72 +1,146 @@
 // Design System Theme
-// Professional mobile app design system with consistent spacing, colors, and typography
+// Semantic theme tokens with proper light/dark mode support
+
+export interface ThemeColors {
+    black: string | OpaqueColorValue | Value | AnimatedInterpolation<string | number> | undefined;
+    // Surface colors
+    background: string;
+    surface: string;
+    card: string;
+    
+    // Text colors
+    textPrimary: string;
+    textSecondary: string;
+    textTertiary: string;
+    
+    // Brand colors
+    primary: string;
+    primaryMuted: string;
+    
+    // Semantic colors
+    success: string;
+    warning: string;
+    error: string;
+    info: string;
+    
+    // Border & divider
+    border: string;
+    divider: string;
+    
+    // Grays
+    gray50: string;
+    gray100: string;
+    gray200: string;
+    gray300: string;
+    gray400: string;
+    gray500: string;
+    gray600: string;
+    gray700: string;
+    gray800: string;
+    gray900: string;
+}
+
+export const lightTheme: ThemeColors = {
+    // Surfaces - Light Mode
+    background: '#FAF5FF',      // Very light purple tint
+    surface: '#FFFFFF',          // Pure white for cards
+    card: '#FFFFFF',             // Same as surface
+    
+    // Text - Light Mode
+    textPrimary: '#1F2937',      // Dark gray (not pure black)
+    textSecondary: '#6B7280',    // Medium gray
+    textTertiary: '#9CA3AF',     // Light gray
+    
+    // Brand
+    primary: '#9b87f5',          // Purple
+    primaryMuted: '#F3E8FF',     // Very light purple
+    
+    // Semantic
+    success: '#10B981',
+    warning: '#F59E0B',
+    error: '#EF4444',
+    info: '#3B82F6',
+    
+    // Borders
+    border: '#E5E7EB',
+    divider: '#F3F4F6',
+    
+    // Grays
+    gray50: '#F9FAFB',
+    gray100: '#F3F4F6',
+    gray200: '#E5E7EB',
+    gray300: '#D1D5DB',
+    gray400: '#9CA3AF',
+    gray500: '#6B7280',
+    gray600: '#4B5563',
+    gray700: '#374151',
+    gray800: '#1F2937',
+    gray900: '#111827',
+};
+
+export const darkTheme: ThemeColors = {
+    // Surfaces - Light Mode (forcing light mode only)
+    background: '#FAF5FF',       // Very light purple tint
+    surface: '#FFFFFF',          // Pure white
+    card: '#FFFFFF',             // Same as surface
+    
+    // Text - Light Mode
+    textPrimary: '#1F2937',      // Dark gray (not black)
+    textSecondary: '#6B7280',    // Medium gray
+    textTertiary: '#9CA3AF',     // Light gray
+    
+    // Brand
+    primary: '#9b87f5',          // Purple
+    primaryMuted: '#F3E8FF',     // Light purple
+    
+    // Semantic
+    success: '#10B981',          // Green
+    warning: '#F59E0B',          // Amber
+    error: '#EF4444',            // Red
+    info: '#3B82F6',             // Blue
+    
+    // Category Colors
+    academics: '#3B82F6',        // Blue
+    wellness: '#10B981',         // Green
+    work: '#8B5CF6',             // Violet
+    social: '#F59E0B',           // Amber
+    
+    // Borders
+    border: '#E5E7EB',
+    divider: '#F3F4F6',
+    
+    // Grays (warmer tones)
+    gray50: '#FAFAFC',
+    gray100: '#F4F5F7',
+    gray200: '#E8EAED',
+    gray300: '#D3D6DB',
+    gray400: '#9AA1B0',
+    gray500: '#6B7489',
+    gray600: '#4A5568',
+    gray700: '#2D3748',
+    gray800: '#1A202C',
+    gray900: '#0F1419',
+    
+    // Additional colors
+    purple: '#9b87f5',
+    purpleMuted: '#F3E8FF',
+    blue: '#3B82F6',
+    green: '#10B981',
+    orange: '#F59E0B',
+    red: '#EF4444',
+    yellow: '#FBBF24',
+    indigo: '#6366F1',
+    pink: '#EC4899',
+    teal: '#14B8A6',
+    
+    // Status indicators
+    online: '#10B981',
+    away: '#F59E0B',
+    busy: '#EF4444',
+};
 
 export const theme = {
-    // Color Palette
-    colors: {
-        // Primary - Purple brand color
-        primary: {
-            main: '#7C3AED',
-            light: '#A78BFA',
-            dark: '#6D28D9',
-            bg: '#F5F3FF', // Very light purple for backgrounds
-        },
-
-        // Secondary - Accent colors
-        secondary: {
-            blue: '#3B82F6',
-            green: '#10B981',
-            orange: '#F97316',
-            pink: '#EC4899',
-            yellow: '#F59E0B',
-        },
-
-        // Neutrals - Grayscale palette
-        neutral: {
-            50: '#FAFAFA',
-            100: '#F5F5F5',
-            200: '#E5E5E5',
-            300: '#D4D4D4',
-            400: '#A3A3A3',
-            500: '#737373',
-            600: '#525252',
-            700: '#404040',
-            800: '#262626',
-            900: '#171717',
-            black: '#000000',
-            white: '#FFFFFF',
-        },
-
-        // Semantic colors
-        success: '#10B981',
-        warning: '#F59E0B',
-        error: '#EF4444',
-        info: '#3B82F6',
-
-        // Text colors
-        text: {
-            primary: '#171717',
-            secondary: '#525252',
-            tertiary: '#A3A3A3',
-            inverse: '#FFFFFF',
-        },
-
-        // Background colors
-        background: {
-            primary: '#FFFFFF',
-            secondary: '#FAFAFA',
-            tertiary: '#F5F5F5',
-        },
-
-        // Border colors
-        border: {
-            light: '#E5E5E5',
-            medium: '#D4D4D4',
-            dark: '#A3A3A3',
-        },
-    },
-
-    // Spacing Scale (4px base)
+    // Spacing Scale (8px base)
     spacing: {
         xxs: 4,
         xs: 8,
@@ -126,37 +200,37 @@ export const theme = {
         },
     },
 
-    // Shadows (elevation system)
-    shadows: {
+    // Shadows (light mode only)
+    getShadow: () => ({
         sm: {
-            shadowColor: '#000',
+            shadowColor: '#9b87f5',
             shadowOffset: { width: 0, height: 1 },
             shadowOpacity: 0.05,
             shadowRadius: 2,
             elevation: 1,
         },
         md: {
-            shadowColor: '#000',
+            shadowColor: '#9b87f5',
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.08,
             shadowRadius: 4,
             elevation: 2,
         },
         lg: {
-            shadowColor: '#000',
+            shadowColor: '#9b87f5',
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.12,
             shadowRadius: 8,
             elevation: 4,
         },
         xl: {
-            shadowColor: '#000',
+            shadowColor: '#9b87f5',
             shadowOffset: { width: 0, height: 8 },
             shadowOpacity: 0.16,
             shadowRadius: 16,
             elevation: 8,
         },
-    },
+    }),
 
     // Component-specific styles
     components: {
@@ -198,15 +272,15 @@ export const theme = {
     },
 };
 
-// Helper function to get consistent styles
-export const getCardStyle = () => ({
-    backgroundColor: theme.colors.background.primary,
+// Helper to get theme-aware card style
+export const getCardStyle = (colors: ThemeColors) => ({
+    backgroundColor: colors.card,
     borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.md,
-    ...theme.shadows.md,
+    ...theme.getShadow().md,
 });
 
-export const getButtonStyle = (variant: 'primary' | 'secondary' | 'outline' = 'primary') => {
+export const getButtonStyle = (colors: ThemeColors, variant: 'primary' | 'secondary' | 'outline' = 'primary') => {
     const baseStyle = {
         height: theme.components.button.height.md,
         paddingHorizontal: theme.components.button.paddingHorizontal.md,
@@ -220,60 +294,60 @@ export const getButtonStyle = (variant: 'primary' | 'secondary' | 'outline' = 'p
         case 'primary':
             return {
                 ...baseStyle,
-                backgroundColor: theme.colors.primary.main,
+                backgroundColor: colors.primary,
             };
         case 'secondary':
             return {
                 ...baseStyle,
-                backgroundColor: theme.colors.neutral[100],
+                backgroundColor: colors.surface,
             };
         case 'outline':
             return {
                 ...baseStyle,
                 backgroundColor: 'transparent',
                 borderWidth: 1,
-                borderColor: theme.colors.border.medium,
+                borderColor: colors.border,
             };
         default:
             return baseStyle;
     }
 };
 
-export const getTextStyle = (variant: 'h1' | 'h2' | 'h3' | 'body' | 'caption' = 'body') => {
+export const getTextStyle = (colors: ThemeColors, variant: 'h1' | 'h2' | 'h3' | 'body' | 'caption' = 'body') => {
     switch (variant) {
         case 'h1':
             return {
                 fontSize: theme.typography.fontSize.xxxl,
                 fontWeight: theme.typography.fontWeight.bold,
-                color: theme.colors.text.primary,
+                color: colors.textPrimary,
                 lineHeight: theme.typography.fontSize.xxxl * theme.typography.lineHeight.tight,
             };
         case 'h2':
             return {
                 fontSize: theme.typography.fontSize.xxl,
                 fontWeight: theme.typography.fontWeight.bold,
-                color: theme.colors.text.primary,
+                color: colors.textPrimary,
                 lineHeight: theme.typography.fontSize.xxl * theme.typography.lineHeight.tight,
             };
         case 'h3':
             return {
                 fontSize: theme.typography.fontSize.lg,
                 fontWeight: theme.typography.fontWeight.semibold,
-                color: theme.colors.text.primary,
+                color: colors.textPrimary,
                 lineHeight: theme.typography.fontSize.lg * theme.typography.lineHeight.normal,
             };
         case 'body':
             return {
                 fontSize: theme.typography.fontSize.base,
                 fontWeight: theme.typography.fontWeight.regular,
-                color: theme.colors.text.primary,
+                color: colors.textPrimary,
                 lineHeight: theme.typography.fontSize.base * theme.typography.lineHeight.normal,
             };
         case 'caption':
             return {
                 fontSize: theme.typography.fontSize.sm,
                 fontWeight: theme.typography.fontWeight.regular,
-                color: theme.colors.text.secondary,
+                color: colors.textSecondary,
                 lineHeight: theme.typography.fontSize.sm * theme.typography.lineHeight.normal,
             };
         default:

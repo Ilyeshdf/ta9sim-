@@ -1,20 +1,20 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Bell, BellOff, Check, ChevronRight, Database, Globe, HelpCircle, Info, Palette, Shield, Sun, Trash2, X } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
-    StyleSheet,
-    View,
-    Text,
-    ScrollView,
-    TouchableOpacity,
-    Switch,
-    Modal,
     Alert,
     Linking,
+    Modal,
+    ScrollView,
+    StyleSheet,
+    Switch,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
-import { Moon, Sun, Smartphone, Bell, Shield, HelpCircle, ChevronRight, Palette, Globe, Database, Info, X, Check, Trash2, BellOff } from 'lucide-react-native';
-import { useApp, ThemeMode } from '../../contexts/AppContext';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ThemeMode, useApp } from '../../contexts/AppContext';
 
 const LANGUAGES = [
     { code: 'en', label: 'English', native: 'English' },
@@ -94,8 +94,6 @@ export default function SettingsScreen() {
 
     const themeOptions: { mode: ThemeMode; icon: any; label: string }[] = [
         { mode: 'light', icon: Sun, label: 'Light' },
-        { mode: 'dark', icon: Moon, label: 'Dark' },
-        { mode: 'system', icon: Smartphone, label: 'System' },
     ];
 
     const settingsSections = [
@@ -186,19 +184,13 @@ export default function SettingsScreen() {
                             <Text style={[styles.settingLabel, { color: theme.textPrimary }]}>
                                 Current Theme
                             </Text>
-                            <Text style={[styles.settingValue, { color: theme.textSecondary }]}>
-                                {isDark ? 'Dark Mode' : 'Light Mode'}
-                            </Text>
+                            <Text style={[styles.settingValue, { color: theme.textSecondary }]}>Light Mode</Text>
                         </View>
                         <View style={[
                             styles.themeIndicator, 
-                            { backgroundColor: isDark ? theme.gray700 : theme.primary }
+                            { backgroundColor: theme.primary }
                         ]}>
-                            {isDark ? (
-                                <Moon size={14} color="#FFFFFF" />
-                            ) : (
-                                <Sun size={14} color="#FFFFFF" />
-                            )}
+                            <Sun size={14} color="#FFFFFF" />
                         </View>
                     </View>
                 </Animated.View>

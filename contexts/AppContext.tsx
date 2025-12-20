@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import React, { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { useColorScheme } from 'react-native';
-import { lightColors, darkColors } from '../constants/Colors';
-import { db, auth, supabase } from '../lib/supabase';
+import { lightTheme, ThemeColors } from '../constants/theme';
+import { db, supabase } from '../lib/supabase';
 
 // Types
 export interface Task {
@@ -43,7 +43,7 @@ export interface UserMetrics {
 
 export type BalanceStatus = 'BALANCED' | 'OVERLOADED' | 'RELAXED';
 export type WorkflowStage = 'welcome' | 'input' | 'processing' | 'result' | 'edit';
-export type ThemeMode = 'light' | 'dark' | 'system';
+export type ThemeMode = 'light';
 
 interface AppContextType {
     // User data
@@ -96,7 +96,7 @@ interface AppContextType {
     themeMode: ThemeMode;
     setThemeMode: (mode: ThemeMode) => void;
     isDark: boolean;
-    theme: typeof lightColors;
+    theme: ThemeColors;
 
     // Search
     searchQuery: string;
@@ -144,13 +144,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const [workflowStage, setWorkflowStage] = useState<WorkflowStage>('result');
     const [isProcessing, setIsProcessing] = useState(false);
     const [demoMode, setDemoMode] = useState(false);
-    const [themeMode, setThemeMode] = useState<ThemeMode>('system');
+    const [themeMode, setThemeMode] = useState<ThemeMode>('light');
     const [searchQuery, setSearchQuery] = useState('');
-    const systemColorScheme = useColorScheme();
 
-    // Determine if dark mode based on setting
-    const isDark = themeMode === 'dark' || (themeMode === 'system' && systemColorScheme === 'dark');
-    const theme = isDark ? darkColors : lightColors;
+    // Force light mode only
+    const isDark = false;
+    const theme = lightTheme;
 
     // Filtered tasks for search
     const filteredTasks = tasks.filter(task =>

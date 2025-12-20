@@ -1,0 +1,39 @@
+extract_pdf_planning_data:
+  description: >
+    Analyze the provided PDF document and extract all academic planning information including:
+    1. Classes (name, time, days, location, instructor)
+    2. Exams (name, date, time, module, location, weight)
+    3. Assignments (name, deadline, module, weight, description)
+    4. Commitments (name, time, recurrence, category)
+    5. Modules (code, name, importance, credits)
+    
+    Ensure all dates are in YYYY-MM-DD format and all extracted data is accurate.
+  expected_output: >
+    A structured JSON object containing all extracted planning data with high confidence scores for each item.
+  agent: pdf_planning_reader
+
+make_daily_priority_decision:
+  description: >
+    Using the extracted planning data and current tasks, analyze and determine today's highest priority activity. Consider:
+    1. Deadline proximity (urgent tasks)
+    2. Module importance (high credit/weight modules)
+    3. Workload balance (avoid overloading)
+    4. Confidence level in the assessment
+    
+    Provide a detailed reasoning for your decision including how each factor influenced your choice.
+  expected_output: >
+    A priority analysis with top priority task, urgency score (0-1), confidence level (0-1), module importance rating, and detailed reasoning.
+  agent: daily_priority_decision_maker
+
+provide_final_decision:
+  description: >
+    Based on the priority analysis, create a student-friendly recommendation consisting of:
+    1. One clear, concise sentence explaining what the student should focus on today
+    2. 3-5 actionable steps to accomplish this priority
+    3. Estimated duration to complete the task
+    4. Confidence level in the recommendation
+    
+    Communicate in an encouraging, supportive tone that motivates action without causing stress.
+  expected_output: >
+    A student-friendly recommendation with actionable steps, estimated duration, and confidence level.
+  agent: student_decision_advisor

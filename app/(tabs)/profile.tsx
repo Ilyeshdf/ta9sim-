@@ -1,18 +1,26 @@
-import { StyleSheet, ScrollView, TouchableOpacity, Switch, View as RNView } from 'react-native';
 import { Text, View } from '@/components/Themed';
-import { 
-  User, Bell, Moon, Lock, HelpCircle, LogOut, ChevronRight, 
-  Edit3, Award, Target, Zap, Settings, Shield
-} from 'lucide-react-native';
-import { useState } from 'react';
 import { useApp } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { router } from 'expo-router';
+import {
+    Award,
+    Bell,
+    ChevronRight,
+    Edit3,
+    HelpCircle, LogOut,
+    Moon,
+    Settings, Shield,
+    Target,
+    User,
+    Zap
+} from 'lucide-react-native';
+import { useState } from 'react';
+import { ScrollView, StyleSheet, Switch, TouchableOpacity } from 'react-native';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 
 export default function ProfileScreen() {
   const [notifications, setNotifications] = useState(true);
-  const { tasks, userName, metrics, theme, themeMode, setThemeMode, isDark } = useApp();
+  const { tasks, userName, metrics, theme, themeMode, setThemeMode } = useApp();
   const { logout } = useAuth();
   
   const completedTasks = tasks.filter(t => t.completed).length;
@@ -100,23 +108,24 @@ export default function ProfileScreen() {
             
             <View style={[styles.settingDivider, { backgroundColor: theme.gray100 }]} />
             
-            <View style={[styles.settingItem, { backgroundColor: 'transparent' }]}>
-              <View style={[styles.settingLeft, { backgroundColor: 'transparent' }]}>
-                <View style={[styles.settingIcon, { backgroundColor: theme.purpleMuted }]}>
-                  <Moon color={theme.purple} size={18} />
-                </View>
-                <View style={[styles.settingText, { backgroundColor: 'transparent' }]}>
-                  <Text style={[styles.settingTitle, { color: theme.textPrimary }]}>Dark Mode</Text>
-                  <Text style={[styles.settingDesc, { color: theme.textTertiary }]}>Reduce eye strain</Text>
-                </View>
-              </View>
-              <Switch
-                value={isDark}
-                onValueChange={(value) => setThemeMode(value ? 'dark' : 'light')}
-                trackColor={{ false: theme.gray200, true: theme.primary }}
-                thumbColor={theme.white}
-              />
+            <View style={[styles.settingItem, { backgroundColor: 'transparent' }]}>  
+              <View style={[styles.settingLeft, { backgroundColor: 'transparent' }]}>  
+                <View style={[styles.settingIcon, { backgroundColor: theme.purpleMuted }]}>  
+                  <Moon color={theme.purple} size={18} />  
+                </View>  
+                <View style={[styles.settingText, { backgroundColor: 'transparent' }]}>  
+                  <Text style={[styles.settingTitle, { color: theme.textPrimary }]}>Dark Mode</Text>  
+                  <Text style={[styles.settingDesc, { color: theme.textTertiary }]}>Enable dark theme</Text>  
+                </View>  
+              </View>  
+              <Switch  
+                value={themeMode === 'dark'}  
+                onValueChange={(value) => setThemeMode(value ? 'dark' : 'light')}  
+                trackColor={{ false: theme.gray200, true: theme.primary }}  
+                thumbColor={theme.white}  
+              />  
             </View>
+
           </View>
         </Animated.View>
 
